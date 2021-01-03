@@ -40,14 +40,14 @@ class _AccountPictureSettingsState extends State<AccountPictureSettings> {
         SizedBox(height: height * 0.029),
         Stack(
           children: [
-            Image.asset('assets/images/$image.png'),
+            //Image.asset('assets/images/$image.png'),
             Positioned(
               top: 5,
               right: 10,
               child: Row(
                 children: [
-                  SvgPicture.asset('assets/svg/attachment.svg'),
-                  SvgPicture.asset('assets/svg/cross.svg')
+                  /*SvgPicture.asset('assets/svg/attachment.svg'),
+                  SvgPicture.asset('assets/svg/cross.svg')*/
                 ],
               ),
             )

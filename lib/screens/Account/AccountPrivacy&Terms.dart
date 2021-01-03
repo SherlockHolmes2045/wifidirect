@@ -10,7 +10,7 @@ class AccountPrivacyAndTerms extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(height: height * 0.043),
-          SvgPicture.asset('assets/svg/lightningIcon2.svg'),
+          //SvgPicture.asset('assets/svg/lightningIcon2.svg'),
           SizedBox(height: height * 0.073),
           Text(
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas metus nisl, cursus sit amet pellentesque id, volutpat quis sapien.",

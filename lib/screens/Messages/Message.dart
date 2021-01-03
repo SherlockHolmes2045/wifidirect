@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/screens/Messages/chat.dart';
+import 'package:siuu_tchat/screens/Nearby.dart';
 
 import 'loader.dart';
 
@@ -202,7 +203,7 @@ class _MessageState extends State<Message> with SingleTickerProviderStateMixin {
           controller: _tabController,
           children: [
             buildListView(),
-            buildListView(),
+            Nearby(),
             buildListView(),
           ],
         ),

@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/res/colors.dart';
+
+import '../../events.dart';
 
 class Chat extends StatefulWidget {
   final bool isRoomTalk;
@@ -12,7 +17,17 @@ class Chat extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
+
+  static const platform = const MethodChannel('samples.flutter.dev/battery');
+  static const _channel_message = const EventChannel('com.sherlock2045.eventchannel/messages');
   bool messageSeen = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _enableTimer();
+  }
   @override
   Widget build(BuildContext context) {
     final double height = MediaQuery.of(context).size.height;
@@ -80,12 +95,12 @@ class _ChatState extends State<Chat> {
                           ),
                         ],
                       )
-                    : Container(),
+                    :
+                Container(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(30, 20, 20, 30),
                   child: Column(
                     children: [
-                      buildColumn(),
                       buildColumn(),
                       buildColumn(),
                       buildColumn(),
@@ -142,7 +157,12 @@ class _ChatState extends State<Chat> {
                       Spacer(),
                       SvgPicture.asset('assets/svg/File.svg'),
                       Spacer(),
-                      SvgPicture.asset('assets/svg/icon - send.svg'),
+                      InkWell(
+                          child: SvgPicture.asset('assets/svg/icon - send.svg'),
+                        onTap: () async{
+                          await platform.invokeMethod("sendMessage",{"message": "test"});
+                        },
+                      ),
                       Spacer(),
                     ],
                   )
@@ -273,5 +293,25 @@ class _ChatState extends State<Chat> {
         color: Color(0xff5b055e),
       ),
     );
+  }
+  int _timer = 0;
+  StreamSubscription _timerSubscription;
+
+  void _enableTimer() {
+    if (_timerSubscription == null) {
+      _timerSubscription = _channel_message.receiveBroadcastStream().listen(_updateTimer);
+    }
+  }
+
+  void _disableTimer() {
+    if (_timerSubscription != null) {
+      _timerSubscription.cancel();
+      _timerSubscription = null;
+    }
+  }
+
+  void _updateTimer(timer) {
+    debugPrint("Timer $timer");
+    //setState(() => _timer = timer);
   }
 }
