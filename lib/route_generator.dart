@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:siuu_tchat/playground.dart';
 import 'package:siuu_tchat/screens/Messages/Message.dart';
-import 'package:siuu_tchat/screens/Messages/chat.dart';
+import 'package:siuu_tchat/screens/Messages/chat_custom.dart';
 import 'package:siuu_tchat/screens/splashScreen.dart';
 import 'BNB.dart';
 import 'screens/Messages/loader.dart';
@@ -13,7 +13,7 @@ class RouteGenerator {
 
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => SplashScreen());
+        return MaterialPageRoute(builder: (_) => Chat(name: "Sherlock",));//SplashScreen());
       case '/messages':
         return MaterialPageRoute(builder: (_) => Message());
       case '/chat':
@@ -21,7 +21,7 @@ class RouteGenerator {
         return MaterialPageRoute(
           builder: (_) => Chat(
             name: argss.name,
-            isRoomTalk: argss.isRoomTalk,
+            //isRoomTalk: argss.isRoomTalk,
           ),
         );
       case '/loader':

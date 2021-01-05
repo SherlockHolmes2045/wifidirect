@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 
 class Chat extends StatefulWidget {
   final String name;
@@ -20,46 +22,48 @@ class _ChatState extends State<Chat> {
 
   TextEditingController messageEditingController = new TextEditingController();
 
-  Widget chatMessages() {
+  Widget chatMessages(BuildContext context) {
     return chats.isNotEmpty
-        ? ListView.builder(
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              return MessageTile(
-                message: chats[index]["message"],
-                sendByMe: chats[index]["sendBy"],
-              );
-            })
+        ? Container(
+            height: MediaQuery.of(context).size.height/1.42,
+            child: ListView.builder(
+                itemCount: chats.length,
+                itemBuilder: (context, index) {
+                  return MessageTile(
+                    message: chats[index]["message"],
+                    sendByMe: chats[index]["sendBy"],
+                  );
+                }),
+          )
         : Container();
   }
 
   Widget appBarMain(BuildContext context) {
     return AppBar(
-      title: Text(
-        widget.name
-      ),
+      title: Text(widget.name),
       elevation: 0.0,
       centerTitle: true,
       backgroundColor: Color(0xff5b055e),
     );
   }
 
-  addMessage() async{
+  addMessage() async {
     if (messageEditingController.text.isNotEmpty) {
       Map<String, dynamic> chatMessageMap = {
         "sendBy": true,
         "message": messageEditingController.text,
         'time': DateTime.now().millisecondsSinceEpoch,
       };
-      await platform.invokeMethod("sendMessage",{"message":messageEditingController.text});
+      await platform.invokeMethod(
+          "sendMessage", {"message": messageEditingController.text});
       setState(() {
         chats.add(chatMessageMap);
         messageEditingController.text = "";
       });
     }
   }
-  pushReceivedMessage(String message){
 
+  pushReceivedMessage(String message) {
     Map<String, dynamic> chatMessageMap = {
       "sendBy": false,
       "message": message,
@@ -89,32 +93,66 @@ class _ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context) {
+    chats.add({
+      "sendBy": true,
+      "message": "Lorem ipsum",
+      "time": DateTime.now().millisecondsSinceEpoch,
+    });
+    chats.add({
+      "sendBy": true,
+      "message": "Lorem ipsum",
+      "time": DateTime.now().millisecondsSinceEpoch,
+    });
+    chats.add({
+      "sendBy": false,
+      "message": "Lorem ipsum",
+      "time": DateTime.now().millisecondsSinceEpoch,
+    });
+    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
     print(chats);
     return Scaffold(
-      appBar: appBarMain(context),
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: Size(width, height * 0.1755),
+        child: AppBar3(
+          title: widget.name,
+        ),
+      ),
       body: Container(
         child: Stack(
           children: [
-            chatMessages(),
+            chatMessages(context),
             Container(
               alignment: Alignment.bottomCenter,
               width: MediaQuery.of(context).size.width,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                color:  Color(0xff5b055e),
+                height: height * 0.075,
+                width: width * 0.902,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: width * 0.002,
+                    color: Color(0xff5b055e),
+                  ),
+                  borderRadius: BorderRadius.circular(26.00),
+                ),
                 child: Row(
                   children: [
                     Expanded(
-                        child:
-                        TextField(
+                      child: TextField(
                           style: TextStyle(color: Colors.white, fontSize: 15.0),
                           controller: messageEditingController,
-                          decoration: InputDecoration.collapsed(
-                            hintText: 'Type your message...',
-                            hintStyle: TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                     ),
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.only(left: 20),
+                            border: InputBorder.none,
+                            hintText: "Say something…",
+                            hintStyle: TextStyle(
+                              fontFamily: "Segoe UI",
+                              fontSize: 15,
+                              color: Color(0xff4d0cbb),
+                            ),
+                          )),
+                    ),
                     SizedBox(
                       width: 16,
                     ),
@@ -135,11 +173,8 @@ class _ChatState extends State<Chat> {
                                   end: FractionalOffset.bottomRight),
                               borderRadius: BorderRadius.circular(40)),
                           padding: EdgeInsets.all(12),
-                          child: Image.asset(
-                            "assets/images/send.png",
-                            height: 25,
-                            width: 25,
-                          )),
+                          child:
+                              SvgPicture.asset('assets/svg/icon - send.svg')),
                     ),
                   ],
                 ),
@@ -150,11 +185,13 @@ class _ChatState extends State<Chat> {
       ),
     );
   }
+
   StreamSubscription _timerSubscription;
 
   void _enableTimer() {
     if (_timerSubscription == null) {
-      _timerSubscription = _channel_message.receiveBroadcastStream().listen(_updateTimer);
+      _timerSubscription =
+          _channel_message.receiveBroadcastStream().listen(_updateTimer);
     }
   }
 
@@ -200,7 +237,10 @@ class MessageTile extends StatelessWidget {
             gradient: LinearGradient(
               colors: sendByMe
                   ? [const Color(0xff007EF4), const Color(0xff2A75BC)]
-                  : [ const Color(0xFF3366FF), const Color(0xFF00CCFF),],
+                  : [
+                      const Color(0xFF3366FF),
+                      const Color(0xFF00CCFF),
+                    ],
             )),
         child: Text(message,
             textAlign: TextAlign.start,
@@ -212,6 +252,4 @@ class MessageTile extends StatelessWidget {
       ),
     );
   }
-
-
 }
