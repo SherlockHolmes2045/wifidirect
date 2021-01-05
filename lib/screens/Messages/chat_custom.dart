@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
+import 'package:siuu_tchat/res/colors.dart';
 
 class Chat extends StatefulWidget {
   final String name;
@@ -194,7 +195,17 @@ class _ChatState extends State<Chat> {
           _channel_message.receiveBroadcastStream().listen(_updateTimer);
     }
   }
-
+  Text buildTimeText(String time) {
+    return Text(
+      time,
+      style: TextStyle(
+        fontFamily: "Segoe UI",
+        fontWeight: FontWeight.w300,
+        fontSize: 14,
+        color: Color(0xff5b055e),
+      ),
+    );
+  }
   void _disableTimer() {
     if (_timerSubscription != null) {
       _timerSubscription.cancel();
@@ -216,6 +227,8 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
     return Container(
       padding: EdgeInsets.only(
           top: 8, bottom: 8, left: sendByMe ? 0 : 24, right: sendByMe ? 24 : 0),
@@ -225,30 +238,20 @@ class MessageTile extends StatelessWidget {
             sendByMe ? EdgeInsets.only(left: 30) : EdgeInsets.only(right: 30),
         padding: EdgeInsets.only(top: 17, bottom: 17, left: 20, right: 20),
         decoration: BoxDecoration(
-            borderRadius: sendByMe
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomLeft: Radius.circular(23))
-                : BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomRight: Radius.circular(23)),
-            gradient: LinearGradient(
-              colors: sendByMe
-                  ? [const Color(0xff007EF4), const Color(0xff2A75BC)]
-                  : [
-                      const Color(0xFF3366FF),
-                      const Color(0xFF00CCFF),
-                    ],
-            )),
-        child: Text(message,
+            borderRadius: BorderRadius.circular(15.00),
+            gradient: sendByMe
+                  ? greyGradient
+                  : linearGradient
+            ),
+        child: Text(
+            message,
             textAlign: TextAlign.start,
             style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
-                fontFamily: 'OverpassRegular',
-                fontWeight: FontWeight.w300)),
+                fontSize: 15,
+                fontFamily: "Segoe UI",
+            )
+        ),
       ),
     );
   }

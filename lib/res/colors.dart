@@ -17,3 +17,13 @@ Gradient linearGradient = LinearGradient(
     Color(pinkColor),
   ],
 );
+
+Gradient greyGradient = LinearGradient(
+  begin:  Alignment.topLeft,
+  end: Alignment.bottomRight,
+
+  colors: [
+    Color(0xffaaa5a5),
+    Color(0xffaaa5a5)
+  ]
+);
