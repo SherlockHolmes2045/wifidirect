@@ -44,6 +44,7 @@ dependencies:
   animated_background: ^1.0.5
   permission_handler: ^5.0.1+1
   gson: ^0.1.4
+  intl: ^0.16.1
 
 
 dev_dependencies:

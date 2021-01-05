@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/res/colors.dart';
 
@@ -30,9 +31,25 @@ class _ChatState extends State<Chat> {
             child: ListView.builder(
                 itemCount: chats.length,
                 itemBuilder: (context, index) {
-                  return MessageTile(
-                    message: chats[index]["message"],
-                    sendByMe: chats[index]["sendBy"],
+                  return Column(
+                    children: [
+                      Text(
+                          DateFormat('dd MMM kk:mm').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  chats[index]["time"])
+                          ),
+                        style: TextStyle(
+                          fontFamily: "Segoe UI",
+                          fontWeight: FontWeight.w300,
+                          fontSize: 14,
+                          color: Color(0xff5b055e),
+                        ),
+                      ),
+                      MessageTile(
+                        message: chats[index]["message"],
+                        sendByMe: chats[index]["sendBy"],
+                      ),
+                    ],
                   );
                 }),
           )
