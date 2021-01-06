@@ -111,7 +111,7 @@ class _ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context) {
-    chats.add({
+    /*chats.add({
       "sendBy": true,
       "message": "Lorem ipsum",
       "time": DateTime.now().millisecondsSinceEpoch,
@@ -125,7 +125,7 @@ class _ChatState extends State<Chat> {
       "sendBy": false,
       "message": "Lorem ipsum",
       "time": DateTime.now().millisecondsSinceEpoch,
-    });
+    });*/
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
     print(chats);
