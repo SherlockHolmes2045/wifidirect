@@ -45,7 +45,8 @@ dependencies:
   permission_handler: ^5.0.1+1
   gson: ^0.1.4
   intl: ^0.16.1
-  webrtc_data_channel: "^0.1.0"
+  get_ip:
+  provider: 4.1.0-dev+3
 
 
 dev_dependencies:

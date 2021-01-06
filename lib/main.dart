@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:siuu_tchat/playground.dart';
 import 'package:siuu_tchat/route_generator.dart';
+import 'package:provider/provider.dart';
+import 'core/services/providerRegistrar.dart';
 
 
 void main() {
@@ -23,14 +24,17 @@ class MyApp extends StatelessWidget {
       builder: (BuildContext context, BoxConstraints constraints) {
         return OrientationBuilder(
           builder: (BuildContext context, Orientation orientation) {
-            return MaterialApp(
-              initialRoute: '/',
-              onGenerateRoute: RouteGenerator.generateRoute,
-              debugShowCheckedModeBanner: false,
-              theme: ThemeData(
-                primarySwatch: Colors.purple,
-                visualDensity: VisualDensity.adaptivePlatformDensity,
-              ),
+            return MultiProvider(
+              providers: registerProviders,
+              child:  MaterialApp(
+                initialRoute: '/',
+                onGenerateRoute: RouteGenerator.generateRoute,
+                debugShowCheckedModeBanner: false,
+                theme: ThemeData(
+                  primarySwatch: Colors.purple,
+                  visualDensity: VisualDensity.adaptivePlatformDensity,
+                ),
+              )
             );
           },
         );
