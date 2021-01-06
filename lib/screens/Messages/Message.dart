@@ -4,6 +4,7 @@ import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/screens/Messages/chat.dart';
 import 'package:siuu_tchat/screens/Nearby.dart';
 
+import '../find_room.dart';
 import 'loader.dart';
 
 class Message extends StatefulWidget {
@@ -204,7 +205,7 @@ class _MessageState extends State<Message> with SingleTickerProviderStateMixin {
           children: [
             buildListView(),
             Nearby(),
-            buildListView(),
+            FindRoom(),
           ],
         ),
       ),

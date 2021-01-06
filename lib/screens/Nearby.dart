@@ -25,12 +25,6 @@ class _NearbyState extends State<Nearby> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.send),
-        onPressed: () async{
-          await platform.invokeMethod("sendMessage",{"message": "test"});
-        },
-      ),
       body: Container(
         child:ListView.separated(
           separatorBuilder: (BuildContext context,int index){
