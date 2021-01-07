@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
+import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/utils/margin.dart';
 
 import '../messageWidget.dart';
@@ -30,34 +32,14 @@ class _RoomTalkState extends State<RoomTalk> {
   @override
   Widget build(BuildContext context) {
     serverProvider = context.watch<ServerViewModel>();
-
+    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        iconTheme:
-        IconThemeData(color: widget.isHost ? Colors.white : Colors.black),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              "TCP ",
-              style: TextStyle(
-                  color: widget.isHost ? Colors.white : Colors.redAccent,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800
-              ),
-            ),
-            Text(
-              "| Chat",
-              style: TextStyle(
-                  color: widget.isHost ? Colors.white : Colors.grey,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300),
-            ),
-          ],
+      appBar: PreferredSize(
+        preferredSize: Size(width, height * 0.1755),
+        child: AppBar3(
+          title: "Room talk",
         ),
-        backgroundColor: widget.isHost ? Colors.redAccent : Colors.white,
       ),
       body: Container(
         width: screenWidth(context),
@@ -86,42 +68,51 @@ class _RoomTalkState extends State<RoomTalk> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   const XMargin(20),
-                  Container(
-                    width: screenWidth(context, percent: 0.43),
+                  Expanded(
+                    //width: screenWidth(context, percent: 0.43),
                     child: TextField(
-                        decoration: InputDecoration.collapsed(
-                          hintText: 'Enter your message',
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(left: 20),
+                          border: InputBorder.none,
+                          hintText: "Say something…",
                           hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[300],
+                            fontFamily: "Segoe UI",
+                            fontSize: 15,
+                            color: Color(0xff4d0cbb),
                           ),
                         ),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[700],
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 15.0),
                         controller: serverProvider.msg,
                         autofocus: false),
                   ),
                   Spacer(),
-                  Container(
-                    height: 50,
-                    child: FlatButton(
-                      onPressed: () {
-                        if (serverProvider.msg.text != null &&
-                            serverProvider.msg.text.isNotEmpty &&
-                            widget.tcpData != null)
-                          serverProvider.sendMessage(
-                            context,
-                            widget?.tcpData,
-                            isHost: widget.isHost,
-                          );
-                      },
-                      color: Colors.grey[100],
-                      textColor: Colors.black,
-                      child: Text('Send'),
+                  GestureDetector(
+                    onTap: (){
+                      if (serverProvider.msg.text != null &&
+                          serverProvider.msg.text.isNotEmpty &&
+                          widget.tcpData != null)
+                        serverProvider.sendMessage(
+                          context,
+                          widget?.tcpData,
+                          isHost: widget.isHost,
+                        );
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [
+                                const Color(0x36FFFFFF),
+                                const Color(0x0FFFFFFF)
+                              ],
+                              begin: FractionalOffset.topLeft,
+                              end: FractionalOffset.bottomRight),
+                          borderRadius: BorderRadius.circular(40)),
+                      padding: EdgeInsets.all(12),
+                      child:  SvgPicture.asset('assets/svg/icon - send.svg'),
+                      ),
                     ),
-                  ),
                   /* Spacer(),
                   Container(
                     height: 20,
