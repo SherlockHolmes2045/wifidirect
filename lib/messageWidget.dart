@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:siuu_tchat/core/model/message.dart';
+import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/utils/margin.dart';
 
 class MessageWidget extends StatelessWidget {
@@ -25,10 +26,11 @@ class MessageWidget extends StatelessWidget {
               Container(
                 //   width: screenWidth(context, percent: 0.6),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: message.user != null && message.user == 0
-                        ? Colors.redAccent
-                        : Colors.grey[200]),
+                    borderRadius: BorderRadius.circular(15.00),
+                    gradient: message.user != null && message.user == 0
+                        ? greyGradient
+                        : linearGradient,
+                ),
                 padding: EdgeInsets.all(14),
                 child: message?.isBold ?? false
                     ? Column(
@@ -46,7 +48,10 @@ class MessageWidget extends StatelessWidget {
                         style: TextStyle(
                             color: message.user != null && message.user == 0
                                 ? Colors.white
-                                : Colors.grey[600]),
+                                : Colors.white,
+                          fontSize: 15,
+                          fontFamily: "Segoe UI",
+                        ),
                       ),
               ),
               const YMargin(5),
@@ -54,7 +59,7 @@ class MessageWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(
                   message.user != null && message.user == 0
-                      ? "You"
+                      ? "Vous"
                       : message.name ?? '',
                   style: TextStyle(
                       color: Colors.grey[600],

@@ -81,7 +81,7 @@ class _RoomTalkState extends State<RoomTalk> {
                             color: Color(0xff4d0cbb),
                           ),
                         ),
-                        style: TextStyle(color: Colors.white, fontSize: 15.0),
+                        style: TextStyle(color: Color(0xff4d0cbb), fontSize: 15.0),
                         controller: serverProvider.msg,
                         autofocus: false),
                   ),

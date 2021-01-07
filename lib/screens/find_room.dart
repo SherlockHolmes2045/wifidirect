@@ -187,7 +187,7 @@ class _FindRoomState extends State<FindRoom> {
                                 controller: provider.name,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                 ),
                                 keyboardAppearance: Brightness.light,
                                 autofocus: false),
