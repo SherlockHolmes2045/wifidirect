@@ -1,10 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/res/colors.dart';
+import 'package:siuu_tchat/utils/message_type.dart';
+import 'dart:io' as Io;
 
 class Chat extends StatefulWidget {
   final String name;
@@ -27,17 +33,16 @@ class _ChatState extends State<Chat> {
   Widget chatMessages(BuildContext context) {
     return chats.isNotEmpty
         ? Container(
-            height: MediaQuery.of(context).size.height/1.42,
+            height: MediaQuery.of(context).size.height / 1.42,
             child: ListView.builder(
                 itemCount: chats.length,
                 itemBuilder: (context, index) {
                   return Column(
                     children: [
                       Text(
-                          DateFormat('dd MMM kk:mm').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  chats[index]["time"])
-                          ),
+                        DateFormat('dd MMM kk:mm').format(
+                            DateTime.fromMillisecondsSinceEpoch(
+                                chats[index]["time"])),
                         style: TextStyle(
                           fontFamily: "Segoe UI",
                           fontWeight: FontWeight.w300,
@@ -45,10 +50,18 @@ class _ChatState extends State<Chat> {
                           color: Color(0xff5b055e),
                         ),
                       ),
-                      MessageTile(
-                        message: chats[index]["message"],
-                        sendByMe: chats[index]["sendBy"],
-                      ),
+                      chats[index]["type"] == Status.TEXT
+                          ? MessageTile(
+                              message: chats[index]["message"],
+                              sendByMe: chats[index]["sendBy"],
+                            )
+                          : chats[index]["type"] == Status.IMAGE
+                              ? ImageTile(
+                                  path: chats[index]["path"],
+                                  sendByMe: chats[index]["sendBy"],
+                                  byte: chats[index]["byte"],
+                                )
+                              : Container(child: Text("audio")),
                     ],
                   );
                 }),
@@ -65,15 +78,37 @@ class _ChatState extends State<Chat> {
     );
   }
 
-  addMessage() async {
-    if (messageEditingController.text.isNotEmpty) {
+  addMessage(Status status, {String path = ""}) async {
+    if (Status.TEXT == status) {
+      if (messageEditingController.text.isNotEmpty) {
+        Map<String, dynamic> chatMessageMap = {
+          "sendBy": true,
+          "message": messageEditingController.text,
+          'time': DateTime.now().millisecondsSinceEpoch,
+          'type': status,
+          'path': path,
+          'byte': false
+        };
+        await platform.invokeMethod("sendMessage",
+            {"message": messageEditingController.text, "type": "text"});
+        setState(() {
+          chats.add(chatMessageMap);
+          messageEditingController.text = "";
+        });
+      }
+    } else if (Status.IMAGE == status) {
       Map<String, dynamic> chatMessageMap = {
         "sendBy": true,
         "message": messageEditingController.text,
         'time': DateTime.now().millisecondsSinceEpoch,
+        'type': status,
+        'path': path,
+        'byte': false
       };
-      await platform.invokeMethod(
-          "sendMessage", {"message": messageEditingController.text});
+      final image = Io.File(path).readAsBytesSync();
+      String imageStr = base64Encode(image);
+      await platform
+          .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
       setState(() {
         chats.add(chatMessageMap);
         messageEditingController.text = "";
@@ -81,15 +116,37 @@ class _ChatState extends State<Chat> {
     }
   }
 
-  pushReceivedMessage(String message) {
-    Map<String, dynamic> chatMessageMap = {
-      "sendBy": false,
-      "message": message,
-      'time': DateTime.now().millisecondsSinceEpoch,
-    };
-    setState(() {
-      chats.add(chatMessageMap);
-    });
+  pushReceivedMessage(String message, String type) {
+    switch (type) {
+      case "image": {
+        Map<String, dynamic> chatMessageMap = {
+          "sendBy": false,
+          "message": message,
+          "time": DateTime.now().millisecondsSinceEpoch,
+          "type": Status.IMAGE,
+          "path": message,
+          "byte": true
+        };
+        setState(() {
+          chats.add(chatMessageMap);
+        });
+      }
+      break;
+      case "text":{
+        Map<String, dynamic> chatMessageMap = {
+          "sendBy": true,
+          "message": message,
+          'time': DateTime.now().millisecondsSinceEpoch,
+          'type': Status.TEXT,
+          'path': null,
+          'byte': false
+        };
+        setState(() {
+          chats.add(chatMessageMap);
+        });
+      }
+      break;
+    }
   }
 
   TextStyle simpleTextStyle() {
@@ -111,6 +168,7 @@ class _ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context) {
+    print(chats);
     /*chats.add({
       "sendBy": true,
       "message": "Lorem ipsum",
@@ -158,7 +216,11 @@ class _ChatState extends State<Chat> {
                   children: [
                     Expanded(
                       child: TextField(
-                          style: TextStyle(color: Colors.white, fontSize: 15.0),
+                          style: TextStyle(
+                            fontFamily: "Segoe UI",
+                            fontSize: 15,
+                            color: Color(0xff4d0cbb),
+                          ),
                           controller: messageEditingController,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.only(left: 20),
@@ -176,7 +238,7 @@ class _ChatState extends State<Chat> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        addMessage();
+                        addMessage(Status.TEXT);
                       },
                       child: Container(
                           height: 40,
@@ -193,6 +255,30 @@ class _ChatState extends State<Chat> {
                           padding: EdgeInsets.all(12),
                           child:
                               SvgPicture.asset('assets/svg/icon - send.svg')),
+                    ),
+                    GestureDetector(
+                      onTap: () async {
+                        File result =
+                            await FilePicker.getFile(type: FileType.image);
+                        print("file " + result.toString());
+                        addMessage(Status.IMAGE, path: result.path);
+                        print(chats);
+                      },
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                                colors: [
+                                  const Color(0x36FFFFFF),
+                                  const Color(0x0FFFFFFF)
+                                ],
+                                begin: FractionalOffset.topLeft,
+                                end: FractionalOffset.bottomRight),
+                            borderRadius: BorderRadius.circular(40)),
+                        padding: EdgeInsets.all(12),
+                        child: SvgPicture.asset('assets/svg/File.svg'),
+                      ),
                     ),
                   ],
                 ),
@@ -212,6 +298,7 @@ class _ChatState extends State<Chat> {
           _channel_message.receiveBroadcastStream().listen(_updateTimer);
     }
   }
+
   Text buildTimeText(String time) {
     return Text(
       time,
@@ -223,6 +310,7 @@ class _ChatState extends State<Chat> {
       ),
     );
   }
+
   void _disableTimer() {
     if (_timerSubscription != null) {
       _timerSubscription.cancel();
@@ -232,7 +320,50 @@ class _ChatState extends State<Chat> {
 
   void _updateTimer(timer) {
     debugPrint("Timer $timer");
-    pushReceivedMessage(timer);
+    var dispatch = timer.split(" ");
+    String message = "";
+    for (int i = 0; i <= dispatch.size; i++) message += dispatch[i];
+    pushReceivedMessage(timer, dispatch[dispatch.size - 1]);
+  }
+}
+
+class ImageTile extends StatefulWidget {
+  final String path;
+  final bool sendByMe;
+  final bool byte;
+  ImageTile(
+      {@required this.path, @required this.sendByMe, @required this.byte});
+  @override
+  _ImageTileState createState() => _ImageTileState();
+}
+
+class _ImageTileState extends State<ImageTile> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        height: 250,
+        width: 250,
+        padding: EdgeInsets.only(
+            top: 8,
+            bottom: 8,
+            left: widget.sendByMe ? 0 : 24,
+            right: widget.sendByMe ? 24 : 0),
+        alignment:
+            widget.sendByMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+            margin: widget.sendByMe
+                ? EdgeInsets.only(left: 30)
+                : EdgeInsets.only(right: 30),
+            padding: EdgeInsets.only(top: 17, bottom: 17, left: 20, right: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.00),
+              gradient: widget.sendByMe ? greyGradient : linearGradient,
+              image: DecorationImage(
+                  image: widget.byte
+                      ? MemoryImage(base64Decode(widget.path))
+                      : FileImage(File(widget.path)),
+                  fit: BoxFit.cover),
+            )));
   }
 }
 
@@ -244,8 +375,6 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double height = MediaQuery.of(context).size.height;
-    final double width = MediaQuery.of(context).size.width;
     return Container(
       padding: EdgeInsets.only(
           top: 8, bottom: 8, left: sendByMe ? 0 : 24, right: sendByMe ? 24 : 0),
@@ -256,19 +385,14 @@ class MessageTile extends StatelessWidget {
         padding: EdgeInsets.only(top: 17, bottom: 17, left: 20, right: 20),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15.00),
-            gradient: sendByMe
-                  ? greyGradient
-                  : linearGradient
-            ),
-        child: Text(
-            message,
+            gradient: sendByMe ? greyGradient : linearGradient),
+        child: Text(message,
             textAlign: TextAlign.start,
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontFamily: "Segoe UI",
-            )
-        ),
+              color: Colors.white,
+              fontSize: 15,
+              fontFamily: "Segoe UI",
+            )),
       ),
     );
   }

@@ -47,6 +47,7 @@ dependencies:
   intl: ^0.16.1
   get_ip:
   provider: 4.1.0-dev+3
+  file_picker: ^1.13.0
 
 
 dev_dependencies:

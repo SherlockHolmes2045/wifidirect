@@ -139,7 +139,8 @@ public class MainActivity extends FlutterActivity {
                                 result.success("yes");
                             }else if(call.method.equals("sendMessage")){
                                 String message = call.argument("message");
-                                sendMessage(message);
+                                String type = call.argument("type");
+                                sendMessage(message,type);
                                 result.success("good");
                             } else {
                                 result.notImplemented();
@@ -425,8 +426,8 @@ public class MainActivity extends FlutterActivity {
         }
     }
 
-    void sendMessage(String message){
-        new MyTask().execute(message);;
+    void sendMessage(String message,String type){
+        new MyTask().execute(message + " " + type);;
     }
 
     private class SendReceive extends Thread{
