@@ -277,6 +277,27 @@ class _ChatState extends State<Chat> {
                         child: SvgPicture.asset('assets/svg/File.svg'),
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () async {
+                        /*File result = await FilePicker.getFile(type: FileType.image);
+                        addMessage(Status.IMAGE, path: result.path);*/
+                      },
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                                colors: [
+                                  const Color(0x36FFFFFF),
+                                  const Color(0x0FFFFFFF)
+                                ],
+                                begin: FractionalOffset.topLeft,
+                                end: FractionalOffset.bottomRight),
+                            borderRadius: BorderRadius.circular(40)),
+                        padding: EdgeInsets.all(12),
+                        child: SvgPicture.asset('assets/svg/Voice.svg'),
+                      ),
+                    ),
                   ],
                 ),
               ),
