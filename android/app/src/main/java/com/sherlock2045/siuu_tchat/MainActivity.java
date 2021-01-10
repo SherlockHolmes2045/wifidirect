@@ -1,6 +1,7 @@
 package com.sherlock2045.siuu_tchat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -405,6 +406,7 @@ public class MainActivity extends FlutterActivity {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     public class MyTask extends AsyncTask<String, Void, Void> {
 
 

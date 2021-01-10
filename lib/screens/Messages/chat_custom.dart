@@ -106,9 +106,9 @@ class _ChatState extends State<Chat> {
         'byte': false
       };
       final image = Io.File(path).readAsBytesSync();
-      String imageStr = base64Encode(image);
-      await platform
-          .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
+      String imageStr = base64.encode(image);
+      print(imageStr);
+      await platform.invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
       setState(() {
         chats.add(chatMessageMap);
         messageEditingController.text = "";
@@ -134,7 +134,7 @@ class _ChatState extends State<Chat> {
       break;
       case "text":{
         Map<String, dynamic> chatMessageMap = {
-          "sendBy": true,
+          "sendBy": false,
           "message": message,
           'time': DateTime.now().millisecondsSinceEpoch,
           'type': Status.TEXT,
@@ -258,11 +258,8 @@ class _ChatState extends State<Chat> {
                     ),
                     GestureDetector(
                       onTap: () async {
-                        File result =
-                            await FilePicker.getFile(type: FileType.image);
-                        print("file " + result.toString());
+                        File result = await FilePicker.getFile(type: FileType.image);
                         addMessage(Status.IMAGE, path: result.path);
-                        print(chats);
                       },
                       child: Container(
                         height: 40,
@@ -321,9 +318,7 @@ class _ChatState extends State<Chat> {
   void _updateTimer(timer) {
     debugPrint("Timer $timer");
     var dispatch = timer.split(" ");
-    String message = "";
-    for (int i = 0; i <= dispatch.size; i++) message += dispatch[i];
-    pushReceivedMessage(timer, dispatch[dispatch.size - 1]);
+    pushReceivedMessage(timer.substring(0,timer.lastIndexOf(" ")), dispatch[dispatch.length - 1]);
   }
 }
 
@@ -360,7 +355,7 @@ class _ImageTileState extends State<ImageTile> {
               gradient: widget.sendByMe ? greyGradient : linearGradient,
               image: DecorationImage(
                   image: widget.byte
-                      ? MemoryImage(base64Decode(widget.path))
+                      ? MemoryImage(base64.decode(widget.path))
                       : FileImage(File(widget.path)),
                   fit: BoxFit.cover),
             )));
