@@ -1,21 +1,27 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/utils/message_type.dart';
 import 'dart:io' as Io;
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 
 class Chat extends StatefulWidget {
   final String name;
+  final LocalFileSystem localFileSystem;
 
-  Chat({this.name});
+  Chat({this.name})
+      :
+        this.localFileSystem = LocalFileSystem();
 
   @override
   _ChatState createState() => _ChatState();
@@ -23,6 +29,9 @@ class Chat extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   List<Map<String, dynamic>> chats = new List<Map<String, dynamic>>();
+  FlutterAudioRecorder _recorder;
+  Recording _current;
+  RecordingStatus _currentStatus = RecordingStatus.Unset;
 
   static const platform = const MethodChannel('samples.flutter.dev/battery');
   static const _channel_message =
@@ -152,13 +161,11 @@ class _ChatState extends State<Chat> {
     }
   }
 
-  TextStyle simpleTextStyle() {
-    return TextStyle(color: Colors.white, fontSize: 16);
-  }
 
   @override
   void initState() {
     super.initState();
+    _init();
     _enableTimer();
   }
 
@@ -309,27 +316,132 @@ class _ChatState extends State<Chat> {
                     ),
                   ),
                 ),
-                Container(
+                GestureDetector(
+                  onLongPress: (){
+                    _start();
+                  },
+                  onLongPressEnd: (longPressEndDetails){
+                    _stop();
+                  },
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height / 7,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: CircleAvatar(
+                        radius: 35.0,
+                        child: Icon(
+                            Icons.mic,
+                          size: 30.0,
+                        ),
+                      ),
+                    )
+                  ),
+                )
+                /*Container(
                   alignment: Alignment.bottomCenter,
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height / 7,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: CircleAvatar(
-                      radius: 35.0,
-                      child: Icon(
-                          Icons.mic,
-                        size: 30.0,
-                      ),
-                    ),
+                  child: AudioRecoder(
                   ),
-                )
+                ),*/
               ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  _init() async {
+    try {
+      if (await FlutterAudioRecorder.hasPermissions) {
+        String customPath = '/flutter_audio_recorder_';
+        Io.Directory appDocDirectory;
+//        io.Directory appDocDirectory = await getApplicationDocumentsDirectory();
+        if (Io.Platform.isIOS) {
+          appDocDirectory = await getApplicationDocumentsDirectory();
+        } else {
+          appDocDirectory = await getExternalStorageDirectory();
+        }
+
+        // can add extension like ".mp4" ".wav" ".m4a" ".aac"
+        customPath = appDocDirectory.path +
+            customPath +
+            DateTime.now().millisecondsSinceEpoch.toString();
+
+        // .wav <---> AudioFormat.WAV
+        // .mp4 .m4a .aac <---> AudioFormat.AAC
+        // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
+        _recorder =
+            FlutterAudioRecorder(customPath, audioFormat: AudioFormat.WAV);
+
+        await _recorder.initialized;
+        // after initialization
+        var current = await _recorder.current(channel: 0);
+        print(current);
+        // should be "Initialized", if all working fine
+        setState(() {
+          _current = current;
+          _currentStatus = current.status;
+          print(_currentStatus);
+        });
+      } else {
+        Scaffold.of(context).showSnackBar(
+            new SnackBar(content: new Text("You must accept permissions")));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _start() async {
+    try {
+      await _recorder.start();
+      var recording = await _recorder.current(channel: 0);
+      setState(() {
+        _current = recording;
+      });
+
+      const tick = const Duration(milliseconds: 50);
+      new Timer.periodic(tick, (Timer t) async {
+        if (_currentStatus == RecordingStatus.Stopped) {
+          t.cancel();
+        }
+
+        var current = await _recorder.current(channel: 0);
+        // print(current.status);
+        setState(() {
+          _current = current;
+          _currentStatus = _current.status;
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _resume() async {
+    await _recorder.resume();
+    setState(() {});
+  }
+
+  _pause() async {
+    await _recorder.pause();
+    setState(() {});
+  }
+
+  _stop() async {
+    var result = await _recorder.stop();
+    print("Stop recording: ${result.path}");
+    print("Stop recording: ${result.duration}");
+    File file = widget.localFileSystem.file(result.path);
+    print("File length: ${await file.length()}");
+    setState(() {
+      _current = result;
+      _currentStatus = _current.status;
+    });
   }
 
   StreamSubscription _timerSubscription;
@@ -402,7 +514,7 @@ class _ImageTileState extends State<ImageTile> {
               image: DecorationImage(
                   image: widget.byte
                       ? MemoryImage(base64.decode(widget.path))
-                      : FileImage(File(widget.path)),
+                      : FileImage(Io.File(widget.path)),
                   fit: BoxFit.cover),
             )));
   }

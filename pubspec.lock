@@ -121,7 +121,7 @@ packages:
     source: hosted
     version: "0.1.3"
   file:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: file
       url: "https://pub.dartlang.org"
@@ -146,6 +146,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_audio_recorder:
+    dependency: "direct main"
+    description:
+      name: flutter_audio_recorder
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.5"
   flutter_fadein:
     dependency: "direct main"
     description:
@@ -353,7 +360,7 @@ packages:
     source: hosted
     version: "0.1.4"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       url: "https://pub.dartlang.org"
