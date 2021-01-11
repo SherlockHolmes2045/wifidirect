@@ -46,8 +46,9 @@ dependencies:
   gson: ^0.1.4
   intl: ^0.16.1
   get_ip:
-  provider: 4.1.0-dev+3
+  provider: ^4.3.2
   file_picker: ^1.13.0
+  flutter_sound: ^7.5.1+2
 
 
 dev_dependencies:

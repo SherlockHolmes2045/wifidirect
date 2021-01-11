@@ -108,7 +108,8 @@ class _ChatState extends State<Chat> {
       final image = Io.File(path).readAsBytesSync();
       String imageStr = base64.encode(image);
       print(imageStr);
-      await platform.invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
+      await platform
+          .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
       setState(() {
         chats.add(chatMessageMap);
         messageEditingController.text = "";
@@ -118,34 +119,36 @@ class _ChatState extends State<Chat> {
 
   pushReceivedMessage(String message, String type) {
     switch (type) {
-      case "image": {
-        Map<String, dynamic> chatMessageMap = {
-          "sendBy": false,
-          "message": message,
-          "time": DateTime.now().millisecondsSinceEpoch,
-          "type": Status.IMAGE,
-          "path": message,
-          "byte": true
-        };
-        setState(() {
-          chats.add(chatMessageMap);
-        });
-      }
-      break;
-      case "text":{
-        Map<String, dynamic> chatMessageMap = {
-          "sendBy": false,
-          "message": message,
-          'time': DateTime.now().millisecondsSinceEpoch,
-          'type': Status.TEXT,
-          'path': null,
-          'byte': false
-        };
-        setState(() {
-          chats.add(chatMessageMap);
-        });
-      }
-      break;
+      case "image":
+        {
+          Map<String, dynamic> chatMessageMap = {
+            "sendBy": false,
+            "message": message,
+            "time": DateTime.now().millisecondsSinceEpoch,
+            "type": Status.IMAGE,
+            "path": message,
+            "byte": true
+          };
+          setState(() {
+            chats.add(chatMessageMap);
+          });
+        }
+        break;
+      case "text":
+        {
+          Map<String, dynamic> chatMessageMap = {
+            "sendBy": false,
+            "message": message,
+            'time': DateTime.now().millisecondsSinceEpoch,
+            'type': Status.TEXT,
+            'path': null,
+            'byte': false
+          };
+          setState(() {
+            chats.add(chatMessageMap);
+          });
+        }
+        break;
     }
   }
 
@@ -199,108 +202,129 @@ class _ChatState extends State<Chat> {
         child: Stack(
           children: [
             chatMessages(context),
-            Container(
-              alignment: Alignment.bottomCenter,
-              width: MediaQuery.of(context).size.width,
-              child: Container(
-                height: height * 0.075,
-                width: width * 0.902,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    width: width * 0.002,
-                    color: Color(0xff5b055e),
-                  ),
-                  borderRadius: BorderRadius.circular(26.00),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                          style: TextStyle(
-                            fontFamily: "Segoe UI",
-                            fontSize: 15,
-                            color: Color(0xff4d0cbb),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  width: MediaQuery.of(context).size.width,
+                  child: Container(
+                    height: height * 0.075,
+                    width: width * 0.902,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: width * 0.002,
+                        color: Color(0xff5b055e),
+                      ),
+                      borderRadius: BorderRadius.circular(26.00),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                              style: TextStyle(
+                                fontFamily: "Segoe UI",
+                                fontSize: 15,
+                                color: Color(0xff4d0cbb),
+                              ),
+                              controller: messageEditingController,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.only(left: 20),
+                                border: InputBorder.none,
+                                hintText: "Say something…",
+                                hintStyle: TextStyle(
+                                  fontFamily: "Segoe UI",
+                                  fontSize: 15,
+                                  color: Color(0xff4d0cbb),
+                                ),
+                              )),
+                        ),
+                        SizedBox(
+                          width: 16,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            addMessage(Status.TEXT);
+                          },
+                          child: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0x36FFFFFF),
+                                        const Color(0x0FFFFFFF)
+                                      ],
+                                      begin: FractionalOffset.topLeft,
+                                      end: FractionalOffset.bottomRight),
+                                  borderRadius: BorderRadius.circular(40)),
+                              padding: EdgeInsets.all(12),
+                              child:
+                                  SvgPicture.asset('assets/svg/icon - send.svg')),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            File result =
+                                await FilePicker.getFile(type: FileType.image);
+                            addMessage(Status.IMAGE, path: result.path);
+                          },
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0x36FFFFFF),
+                                      const Color(0x0FFFFFFF)
+                                    ],
+                                    begin: FractionalOffset.topLeft,
+                                    end: FractionalOffset.bottomRight),
+                                borderRadius: BorderRadius.circular(40)),
+                            padding: EdgeInsets.all(12),
+                            child: SvgPicture.asset('assets/svg/File.svg'),
                           ),
-                          controller: messageEditingController,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.only(left: 20),
-                            border: InputBorder.none,
-                            hintText: "Say something…",
-                            hintStyle: TextStyle(
-                              fontFamily: "Segoe UI",
-                              fontSize: 15,
-                              color: Color(0xff4d0cbb),
-                            ),
-                          )),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            /*File result = await FilePicker.getFile(type: FileType.image);
+                                  addMessage(Status.IMAGE, path: result.path);*/
+                          },
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0x36FFFFFF),
+                                      const Color(0x0FFFFFFF)
+                                    ],
+                                    begin: FractionalOffset.topLeft,
+                                    end: FractionalOffset.bottomRight),
+                                borderRadius: BorderRadius.circular(40)),
+                            padding: EdgeInsets.all(12),
+                            child: SvgPicture.asset('assets/svg/Voice.svg'),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      width: 16,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        addMessage(Status.TEXT);
-                      },
-                      child: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                  colors: [
-                                    const Color(0x36FFFFFF),
-                                    const Color(0x0FFFFFFF)
-                                  ],
-                                  begin: FractionalOffset.topLeft,
-                                  end: FractionalOffset.bottomRight),
-                              borderRadius: BorderRadius.circular(40)),
-                          padding: EdgeInsets.all(12),
-                          child:
-                              SvgPicture.asset('assets/svg/icon - send.svg')),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        File result = await FilePicker.getFile(type: FileType.image);
-                        addMessage(Status.IMAGE, path: result.path);
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                                colors: [
-                                  const Color(0x36FFFFFF),
-                                  const Color(0x0FFFFFFF)
-                                ],
-                                begin: FractionalOffset.topLeft,
-                                end: FractionalOffset.bottomRight),
-                            borderRadius: BorderRadius.circular(40)),
-                        padding: EdgeInsets.all(12),
-                        child: SvgPicture.asset('assets/svg/File.svg'),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        /*File result = await FilePicker.getFile(type: FileType.image);
-                        addMessage(Status.IMAGE, path: result.path);*/
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                                colors: [
-                                  const Color(0x36FFFFFF),
-                                  const Color(0x0FFFFFFF)
-                                ],
-                                begin: FractionalOffset.topLeft,
-                                end: FractionalOffset.bottomRight),
-                            borderRadius: BorderRadius.circular(40)),
-                        padding: EdgeInsets.all(12),
-                        child: SvgPicture.asset('assets/svg/Voice.svg'),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height / 7,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: CircleAvatar(
+                      radius: 35.0,
+                      child: Icon(
+                          Icons.mic,
+                        size: 30.0,
+                      ),
+                    ),
+                  ),
+                )
+              ],
             ),
           ],
         ),
@@ -339,7 +363,8 @@ class _ChatState extends State<Chat> {
   void _updateTimer(timer) {
     debugPrint("Timer $timer");
     var dispatch = timer.split(" ");
-    pushReceivedMessage(timer.substring(0,timer.lastIndexOf(" ")), dispatch[dispatch.length - 1]);
+    pushReceivedMessage(timer.substring(0, timer.lastIndexOf(" ")),
+        dispatch[dispatch.length - 1]);
   }
 }
 
