@@ -13,7 +13,7 @@ class RouteGenerator {
 
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => Chat(name: "sherlock"));//SplashScreen());
+        return MaterialPageRoute(builder: (_) => /*Chat(name: "sherlock"));*/SplashScreen());
       case '/messages':
         return MaterialPageRoute(builder: (_) => Message());
       case '/chat':
