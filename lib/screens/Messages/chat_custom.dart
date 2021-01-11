@@ -16,7 +16,7 @@ import 'dart:io' as Io;
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 
 enum PlayerState { stopped, playing, paused }
 
