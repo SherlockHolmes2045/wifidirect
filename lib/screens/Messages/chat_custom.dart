@@ -307,7 +307,7 @@ class _ChatState extends State<Chat> {
   Future<Uint8List> _loadFileBytes(String url, {OnError onError}) async {
     Uint8List bytes;
     try {
-      bytes = await readBytes(url);
+      bytes = await Io.readBytes(url);
     } on ClientException {
       rethrow;
     }

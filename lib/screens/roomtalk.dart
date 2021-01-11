@@ -113,17 +113,6 @@ class _RoomTalkState extends State<RoomTalk> {
                       child:  SvgPicture.asset('assets/svg/icon - send.svg'),
                       ),
                     ),
-                  /* Spacer(),
-                  Container(
-                    height: 20,
-                    child: IconButton(
-                      onPressed: () {},
-                      iconSize:19,
-                      color: Colors.grey[500],
-                      icon: Icon(Icons.attach_file),
-                    ),
-                  ),
-                  const XMargin(10), */
                 ],
               ),
             ),

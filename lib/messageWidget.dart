@@ -11,6 +11,7 @@ class MessageWidget extends StatelessWidget {
     @required this.message,
   }) : super(key: key);
 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
