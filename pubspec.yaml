@@ -48,10 +48,10 @@ dependencies:
   get_ip:
   provider: ^4.3.2
   file_picker: ^1.13.0
-  flutter_sound: ^7.5.1+2
   flutter_audio_recorder:
   file:
   path_provider:
+  audioplayer: 0.8.1
 
 
 dev_dependencies:
