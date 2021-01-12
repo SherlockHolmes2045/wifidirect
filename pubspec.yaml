@@ -52,6 +52,7 @@ dependencies:
   file:
   path_provider:
   audioplayer: 0.8.1
+  http:
 
 
 dev_dependencies:

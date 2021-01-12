@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
@@ -128,38 +129,40 @@ class _ChatState extends State<Chat> {
   Widget _buildPlayer() => Container(
     padding: EdgeInsets.all(16.0),
     child: Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(mainAxisSize: MainAxisSize.min, children: [
+        Row(children: [
           IconButton(
             onPressed: isPlaying ? null : () => play(),
-            iconSize: 64.0,
+            iconSize: 20.0,
             icon: Icon(Icons.play_arrow),
             color: Colors.cyan,
           ),
           IconButton(
             onPressed: isPlaying ? () => pause() : null,
-            iconSize: 64.0,
+            iconSize: 20.0,
             icon: Icon(Icons.pause),
             color: Colors.cyan,
           ),
           IconButton(
             onPressed: isPlaying || isPaused ? () => stop() : null,
-            iconSize: 64.0,
+            iconSize: 20.0,
             icon: Icon(Icons.stop),
             color: Colors.cyan,
           ),
         ]),
         if (duration != null)
-          Slider(
-              value: position?.inMilliseconds?.toDouble() ?? 0.0,
-              onChanged: (double value) {
-                return audioPlayer.seek((value / 1000).roundToDouble());
-              },
-              min: 0.0,
-              max: duration.inMilliseconds.toDouble()),
-        if (position != null) _buildMuteButtons(),
-        if (position != null) _buildProgressView()
+          Container(
+            width: MediaQuery.of(context).size.height/4,
+            child: Slider(
+                value: position?.inMilliseconds?.toDouble() ?? 0.0,
+                onChanged: (double value) {
+                  return audioPlayer.seek((value / 1000).roundToDouble());
+                },
+                min: 0.0,
+                max: duration.inMilliseconds.toDouble()),
+          ),
+        /*if (position != null) _buildMuteButtons(),
+        if (position != null) _buildProgressView()*/
       ],
     ),
   );
@@ -307,7 +310,7 @@ class _ChatState extends State<Chat> {
   Future<Uint8List> _loadFileBytes(String url, {OnError onError}) async {
     Uint8List bytes;
     try {
-      bytes = await Io.readBytes(url);
+      bytes = await readBytes(url);
     } on ClientException {
       rethrow;
     }
@@ -419,6 +422,11 @@ class _ChatState extends State<Chat> {
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                Container(
+                  height: MediaQuery.of(context).size.height/5,
+                    width: MediaQuery.of(context).size.width/2,
+                    child: _buildPlayer()
+                ),
                 Container(
                   alignment: Alignment.bottomCenter,
                   width: MediaQuery.of(context).size.width,
