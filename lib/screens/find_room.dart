@@ -22,23 +22,22 @@ class _FindRoomState extends State<FindRoom> {
   @override
   void initState() {
     context.read<ServerViewModel>().initState();
-
-    final String ip = getIp();
-    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
-    final int port =4000;
-    final stream = NetworkAnalyzer.discover2(subnet, port);
-
-    stream.listen((NetworkAddress addr) {
-      if (addr.exists) {
-        print('Found device: ${addr.ip}');
-      }
-    });
     super.initState();
   }
-  getIp() async{
-    if (!Platform.isMacOS) {
-      return await GetIp.ipAddress;
-    }
+  getIp(String ipAddr) async{
+    const port = 4000;
+    final stream = NetworkAnalyzer.discover2(
+      '192.168.100', port,
+      timeout: Duration(milliseconds: 100),
+    );
+
+    int found = 0;
+    stream.listen((NetworkAddress addr) {
+      if (addr.exists) {
+        found++;
+        print('Found device: ${addr.ip}:$port');
+      }
+    }).onDone(() => print('Finish. Found $found device(s)'));
   }
 
   Future<void> fetchServer(provider, BuildContext context) async {
@@ -46,6 +45,7 @@ class _FindRoomState extends State<FindRoom> {
     if (!Platform.isMacOS) {
       ipAddress = await GetIp.ipAddress;
     }
+    /*getIp(ipAddress);*/
     List<String> ipBreak = ipAddress.split(".");
     String network = ipAddress.substring(0,ipAddress.lastIndexOf("."));
     String networkPart = ipBreak[ipBreak.length -1];
