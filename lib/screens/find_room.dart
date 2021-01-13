@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_ip/get_ip.dart';
+import 'package:ping_discover_network/ping_discover_network.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
 import 'package:siuu_tchat/screens/roomtalk.dart';
@@ -15,11 +16,29 @@ class FindRoom extends StatefulWidget {
 }
 
 class _FindRoomState extends State<FindRoom> {
+  bool serverFound = false;
+  String ipAddress = "";
+
   @override
   void initState() {
     context.read<ServerViewModel>().initState();
-    print("hello");
+
+    final String ip = getIp();
+    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
+    final int port =4000;
+    final stream = NetworkAnalyzer.discover2(subnet, port);
+
+    stream.listen((NetworkAddress addr) {
+      if (addr.exists) {
+        print('Found device: ${addr.ip}');
+      }
+    });
     super.initState();
+  }
+  getIp() async{
+    if (!Platform.isMacOS) {
+      return await GetIp.ipAddress;
+    }
   }
 
   Future<void> fetchServer(provider, BuildContext context) async {
@@ -35,29 +54,30 @@ class _FindRoomState extends State<FindRoom> {
     provider.port.text = "4000";
     provider.name.text = "test";
     Socket socket;
-    for(int i = 2; i< 255;i++){
+    for(int i = 2; i<= 25;i++){
       if(i != networkPartInt){
         String ipTest = network +"."+i.toString();
         print(ipTest);
+
         socket = await Socket.connect(ipTest, int.parse("4000")).then((value){
+          print("hey");
           provider.ip.text = ipTest;
           provider.port.text = "4000";
           provider.name.text = "test";
-          provider.connectToServer(context,
-              isHost: false);
-        })
-            .timeout(Duration(milliseconds: 500), onTimeout: () {
-          //throw "TimeOUt";
-          print("failure" + ipTest);
-          return null;
+          serverFound = true;
+        }).timeout(Duration(milliseconds: 80), onTimeout: () {
+          throw "TimeOut";
+          return;
+        }).catchError((onError){
+          print(onError);
+          return;
+          throw "Error";
         });
-        print("fini d'attendre");
-        /*provider.connectToServer(context,
-            isHost: false);*/
-
       }
+      if(serverFound)
+        break;
     }
-    return ipAddress;
+    return serverFound ? provider.ip.text : null;
   }
 
   @override
@@ -87,9 +107,16 @@ class _FindRoomState extends State<FindRoom> {
             future: fetchServer(provider, context),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-
-                return Center(
-                    child: Container(child: Text('hasData: ${snapshot.data}')));
+                if(snapshot.data == null){
+                  provider.ip.text = ipAddress;
+                  provider.port.text = "4000";
+                  provider.name.text = "test";
+                  provider.startServer(context);
+                }else{
+                  provider.connectToServer(context,
+                      isHost: false);
+                }
+                return Container();
               } else {
                 return Center(
                   child: Column(

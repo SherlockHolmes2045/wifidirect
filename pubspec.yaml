@@ -53,6 +53,7 @@ dependencies:
   path_provider:
   audioplayer: 0.8.1
   http:
+  ping_discover_network: ^0.2.0+1
 
 
 dev_dependencies:
