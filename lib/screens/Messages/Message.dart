@@ -193,8 +193,8 @@ class _MessageState extends State<Message> with SingleTickerProviderStateMixin {
                 labelColor: Color(0xff4d0cbb),
                 tabs: [
                   Tab(text: 'Chat'),
-                  Tab(text: 'Nearby'),
                   Tab(text: 'Roomtalks'),
+                  Tab(text: 'Nearby'),
                 ],
               ),
             ],
@@ -204,8 +204,8 @@ class _MessageState extends State<Message> with SingleTickerProviderStateMixin {
           controller: _tabController,
           children: [
             buildListView(),
-            Nearby(),
             FindRoom(),
+            Nearby(),
           ],
         ),
       ),

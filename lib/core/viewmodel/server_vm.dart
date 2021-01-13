@@ -141,7 +141,7 @@ class ServerViewModel extends ChangeNotifier {
         _isLoading = true;
         notifyListeners();
         _socket = await Socket.connect(ip.text, int.parse(port.text))
-            .timeout(Duration(seconds: 10), onTimeout: () {
+            .timeout(Duration(seconds: 1), onTimeout: () {
           throw "TimeOUt";
         });
         notifyListeners();
@@ -170,7 +170,7 @@ class ServerViewModel extends ChangeNotifier {
             context,
             MaterialPageRoute(builder: (context) => RoomTalk(tcpData: TCPData(
                 ip: ip.text, port: int.parse(port.text), name: name.text),
-              isHost: true,)
+              isHost: false,)
           ));
           /*navigateReplace(
             context,

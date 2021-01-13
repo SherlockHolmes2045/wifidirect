@@ -161,8 +161,6 @@ class _ChatState extends State<Chat> {
                 min: 0.0,
                 max: duration.inMilliseconds.toDouble()),
           ),
-        /*if (position != null) _buildMuteButtons(),
-        if (position != null) _buildProgressView()*/
       ],
     ),
   );

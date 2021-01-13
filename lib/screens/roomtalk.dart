@@ -7,7 +7,6 @@ import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/utils/margin.dart';
 
 import '../messageWidget.dart';
-//import 'package:tcp/widgets/qrDialog.dart';
 
 class RoomTalk extends StatefulWidget {
   final TCPData tcpData;

@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get_ip/get_ip.dart';
+import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
+import 'package:siuu_tchat/screens/roomtalk.dart';
 import 'package:siuu_tchat/utils/margin.dart';
 import 'package:provider/provider.dart';
 
@@ -10,48 +15,102 @@ class FindRoom extends StatefulWidget {
 }
 
 class _FindRoomState extends State<FindRoom> {
-
   @override
   void initState() {
     context.read<ServerViewModel>().initState();
+    print("hello");
     super.initState();
+  }
 
+  Future<void> fetchServer(provider, BuildContext context) async {
+    String ipAddress = "";
+    if (!Platform.isMacOS) {
+      ipAddress = await GetIp.ipAddress;
+    }
+    List<String> ipBreak = ipAddress.split(".");
+    String network = ipAddress.substring(0,ipAddress.lastIndexOf("."));
+    String networkPart = ipBreak[ipBreak.length -1];
+
+    int networkPartInt = int.parse(networkPart);
+    provider.port.text = "4000";
+    provider.name.text = "test";
+    Socket socket;
+    for(int i = 2; i< 255;i++){
+      if(i != networkPartInt){
+        String ipTest = network +"."+i.toString();
+        print(ipTest);
+        socket = await Socket.connect(ipTest, int.parse("4000")).then((value){
+          provider.ip.text = ipTest;
+          provider.port.text = "4000";
+          provider.name.text = "test";
+          provider.connectToServer(context,
+              isHost: false);
+        })
+            .timeout(Duration(milliseconds: 500), onTimeout: () {
+          //throw "TimeOUt";
+          print("failure" + ipTest);
+          return null;
+        });
+        print("fini d'attendre");
+        /*provider.connectToServer(context,
+            isHost: false);*/
+
+      }
+    }
+    return ipAddress;
   }
 
   @override
   Widget build(BuildContext context) {
     var provider = context.watch<ServerViewModel>();
     return Scaffold(
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            child: Icon(
-              Icons.add
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              child: Icon(Icons.add),
+              heroTag: null,
+              onPressed: () {
+                showServerDialog(context, provider: provider);
+              },
             ),
-            heroTag: null,
-            onPressed: (){
-              showServerDialog(context,provider: provider);
-            },
-          ),
-          FloatingActionButton(
-            child: Icon(
-              Icons.arrow_forward
-            ),
-            heroTag: null,
-            onPressed: (){
-              showClientDialog(context,provider: provider);
-            },
-          )
-        ],
-      ),
-    );
+            FloatingActionButton(
+              child: Icon(Icons.arrow_forward),
+              heroTag: null,
+              onPressed: () {
+                showClientDialog(context, provider: provider);
+              },
+            )
+          ],
+        ),
+        body: FutureBuilder(
+            future: fetchServer(provider, context),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+
+                return Center(
+                    child: Container(child: Text('hasData: ${snapshot.data}')));
+              } else {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Chargement..."
+                      ),
+                      CircularProgressIndicator()
+                    ],
+                  ),
+                );
+              }
+            }));
   }
-  showClientDialog(BuildContext context,{provider}) => showDialog(
+
+  showClientDialog(BuildContext context, {provider}) => showDialog(
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: screenHeight(context)/10,
+          height: screenHeight(context) / 10,
           child: Dialog(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -209,41 +268,44 @@ class _FindRoomState extends State<FindRoom> {
                           ),
                         ),
                         //Spacer(),
-                        provider.isLoading?
-                        Container(
-                          height: 30,
-                          width: 30,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                          ),
-                        ):
-                        Container(
-                          height: 50,
-                          width: screenWidth(context, percent: 0.5),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.grey[900].withOpacity(0.1),
-                                  offset: Offset(0, 13),
-                                  blurRadius: 30)
-                            ],
-                          ),
-                          child: FlatButton(
-                            onPressed: () {
-                              provider.connectToServer(context, isHost: false);
-                            },
-                            child: Text(
-                              "Connect to Server",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                        ),
+                        provider.isLoading
+                            ? Container(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.white),
+                                ),
+                              )
+                            : Container(
+                                height: 50,
+                                width: screenWidth(context, percent: 0.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color:
+                                            Colors.grey[900].withOpacity(0.1),
+                                        offset: Offset(0, 13),
+                                        blurRadius: 30)
+                                  ],
+                                ),
+                                child: FlatButton(
+                                  onPressed: () {
+                                    provider.connectToServer(context,
+                                        isHost: false);
+                                  },
+                                  child: Text(
+                                    "Connect to Server",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400),
+                                  ),
+                                ),
+                              ),
                         const YMargin(40),
-                       // const YMargin(100)
+                        // const YMargin(100)
                       ],
                     ),
                   ),
@@ -253,21 +315,21 @@ class _FindRoomState extends State<FindRoom> {
           ),
         );
       });
-  showServerDialog(BuildContext context,{provider}) => showDialog(
+  showServerDialog(BuildContext context, {provider}) => showDialog(
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: screenHeight(context)/10,
+          height: screenHeight(context) / 10,
           child: Dialog(
             elevation: 0,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
+              borderRadius: BorderRadius.all(Radius.circular(12.0)),
             ),
             child: Center(
               child: ListView(
                 children: <Widget>[
                   Container(
-                    height: screenHeight(context)/1.5,
+                    height: screenHeight(context) / 1.5,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -400,27 +462,12 @@ class _FindRoomState extends State<FindRoom> {
                           ),
                         ),
                         const YMargin(30),
-                        /*Container(
-                          width: screenWidth(context, percent: 0.8),
-                          child: Row(
-                            children: <Widget>[
-                              Text(
-                                provider?.errorMessage ?? '',
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                            ],
-                          ),
-                        ),*/
-                        //Spacer(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Container(
                               height: 50,
-                              width: screenWidth(context)/2,
+                              width: screenWidth(context) / 2,
                               decoration: BoxDecoration(
                                 color: Colors.redAccent,
                                 boxShadow: [
