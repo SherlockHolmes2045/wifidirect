@@ -33,6 +33,7 @@ class _RoomTalkState extends State<RoomTalk> {
     serverProvider = context.watch<ServerViewModel>();
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
+    print(widget.isHost);
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size(width, height * 0.1755),

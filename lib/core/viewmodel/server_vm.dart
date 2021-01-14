@@ -8,9 +8,6 @@ import 'package:get_ip/get_ip.dart';
 import 'package:siuu_tchat/core/model/message.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/screens/roomtalk.dart';
-import 'package:siuu_tchat/utils/navigation.dart';
-//import 'package:siuu_tchat/views/home.dart';
-//import 'package:siuu_tchat/widgets/qrDialog.dart';
 
 class ServerViewModel extends ChangeNotifier {
   List<Message> _messageList = [];
@@ -61,20 +58,25 @@ class ServerViewModel extends ChangeNotifier {
     return TCPData(ip: ip.text, port: int.parse(port.text), name: name.text);
   }
 
-  void startServer(context) async {
-    if (ip.text == null || ip.text.isEmpty) {
+  void startServer(context,String ipAdress,String portNumber,String userName) async {
+
+    /*if (ip.text == null || ip.text.isEmpty) {
       errorMessage = "IP Address cant be empty!";
-      notifyListeners();
+      print("here");
+      //notifyListeners();
     } else if (port.text == null || port.text.isEmpty) {
       errorMessage = "Port cant be empty!";
-      notifyListeners();
+      //notifyListeners();
     } else if (name.text == null || name.text.isEmpty) {
       errorMessage = "Name cant be empty!";
-      notifyListeners();
-    } else {
+      //notifyListeners();
+    } else {*/
       errorMessage = "";
-      notifyListeners();
+      //notifyListeners();
       try {
+        port.text = portNumber;
+        ip.text = ipAdress;
+        name.text = userName;
         _server = await ServerSocket.bind(ip.text, int.parse(port.text),
             shared: true);
         notifyListeners();
@@ -105,25 +107,19 @@ class ServerViewModel extends ChangeNotifier {
           });
 
           print('Started: ${server.address.toString()}');
-          connectToServer(context);
-          Navigator.pushReplacement(
+          print(ip.text);
+          //connectToServer(context);
+          /*Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => RoomTalk(tcpData: getTCPData(),
               isHost: true,) ),
-          );
-          /*navigateReplace(
-            context,
-            HomePage(
-              tcpData: getTCPData(),
-              isHost: true,
-            ),
           );*/
         }
       } catch (e) {
         print(e.toString());
         //showErrorDialog(context, error: e.toString());
       }
-    }
+    //}
   }
 
   connectToServer(context, {bool isHost = true}) async {
@@ -139,12 +135,12 @@ class ServerViewModel extends ChangeNotifier {
     } else {
       try {
         _isLoading = true;
-        notifyListeners();
+       // notifyListeners();
         _socket = await Socket.connect(ip.text, int.parse(port.text))
             .timeout(Duration(seconds: 1), onTimeout: () {
           throw "TimeOUt";
         });
-        notifyListeners();
+       // notifyListeners();
         // listen to the received data event stream
         _socket.listen((List<int> data) {
           try {
@@ -169,22 +165,13 @@ class ServerViewModel extends ChangeNotifier {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => RoomTalk(tcpData: TCPData(
-                ip: ip.text, port: int.parse(port.text), name: name.text),
-              isHost: false,)
+                ip: ip.text, port: int.parse(port.text), name: name.text),)
           ));
-          /*navigateReplace(
-            context,
-            HomePage(
-              tcpData: TCPData(
-                  ip: ip.text, port: int.parse(port.text), name: name.text),
-            ),
-          );*/
-
         _isLoading = false;
-        notifyListeners();
+       // notifyListeners();
       } catch (e) {
         _isLoading = false;
-        notifyListeners();
+        //notifyListeners();
         //showErrorDialog(context, error: e.toString());
         print(e.toString());
       }
@@ -198,16 +185,19 @@ class ServerViewModel extends ChangeNotifier {
   void sendMessage(context, TCPData tcpData, {bool isHost}) {
     /* _messageList.insert(
         0, new Message(message: msg.text, user: 0, userID: null)); */
-
+    print("message " + isHost.toString());
     var message = utf8.encode(json.encode(
-        Message(message: msg.text, name: tcpData?.name ?? '').toJson()));
+        Message(message: msg.text, name: tcpData?.name ?? '', user: isHost ? 0 : 1).toJson()));
 
     if (isHost) {
+      print("host");
       _messageList.insert(
         0,
         Message(message: msg.text, name: tcpData?.name, user: 0),
       );
       notifyListeners();
+    }else{
+
     }
 
     try {
@@ -228,32 +218,4 @@ class ServerViewModel extends ChangeNotifier {
     super.dispose();
   }
 
-  /*void scan(context) async {
-    errorMessage = "";
-    try {
-      var result = await BarcodeScanner.scan();
-      notifyListeners();
-      if (result != null) {
-        var tcpData = TCPData.fromJson(json.decode(result.rawContent));
-
-        ip.text = tcpData.ip;
-        port.text = tcpData.port.toString();
-        notifyListeners();
-
-        connectToServer(context, isHost: false);
-      }
-    } on PlatformException catch (e) {
-      var result = ScanResult(
-        type: ResultType.Error,
-        format: BarcodeFormat.unknown,
-      );
-
-      if (e.code == BarcodeScanner.cameraAccessDenied) {
-        result.rawContent = 'The user did not grant the camera permission!';
-      } else {
-        result.rawContent = 'Unknown error: $e';
-      }
-      showErrorDialog(context, error: result.rawContent);
-    }
-  }*/
 }
