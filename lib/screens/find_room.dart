@@ -67,7 +67,6 @@ class _FindRoomState extends State<FindRoom> {
           provider.name.text = "test";
           serverFound = true;
         }).timeout(Duration(milliseconds: 80), onTimeout: () {
-          print("timeout");
           return;
           throw "TimeOut";
         }).catchError((onError) {
@@ -78,7 +77,7 @@ class _FindRoomState extends State<FindRoom> {
       }
       print("i = " + i.toString());
       if (serverFound) break;
-      if(!serverFound && i == 253) {
+      if(!serverFound && i == 255) {
         provider.ip.text = ipAddress;
         provider.port.text = "4000";
         provider.name.text = "test";
@@ -106,6 +105,7 @@ class _FindRoomState extends State<FindRoom> {
                   provider.ip.text = snapshot.data;
                   provider.port.text = "4000";
                   provider.name.text = "test";
+                  print(provider.ip);
                   provider.startServer(context,snapshot.data,"4000","test");
                 } else {
                   provider.connectToServer(context, isHost: false);

@@ -79,7 +79,7 @@ class ServerViewModel extends ChangeNotifier {
         name.text = userName;
         _server = await ServerSocket.bind(ip.text, int.parse(port.text),
             shared: true);
-        notifyListeners();
+        //notifyListeners();
 
         if (_server != null) {
           _server.listen((Socket _) {
@@ -108,12 +108,12 @@ class ServerViewModel extends ChangeNotifier {
 
           print('Started: ${server.address.toString()}');
           print(ip.text);
-          //connectToServer(context);
-          /*Navigator.pushReplacement(
+          connectToServer(context);
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => RoomTalk(tcpData: getTCPData(),
               isHost: true,) ),
-          );*/
+          );
         }
       } catch (e) {
         print(e.toString());
