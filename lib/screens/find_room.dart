@@ -107,7 +107,6 @@ class _FindRoomState extends State<FindRoom> {
                   provider.ip.text = snapshot.data;
                   provider.port.text = "4000";
                   provider.name.text = "test";
-                  print(provider.ip);
                   provider.startServer(context,snapshot.data,"4000","test");
                 } else {
                   provider.connectToServer(context, isHost: false);

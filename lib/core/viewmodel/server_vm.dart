@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:convert' show json, utf8;
 
-//import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_ip/get_ip.dart';
@@ -95,7 +94,7 @@ class ServerViewModel extends ChangeNotifier {
                       Message(
                           message: message.message,
                           name: message.name,
-                          user: message.name == getTCPData().name ? 0 : 1));
+                          user: message.ip == getTCPData().ip ? 0 : 1));
                   notifyListeners();
                 }
                 _.add(data);
@@ -117,7 +116,6 @@ class ServerViewModel extends ChangeNotifier {
         }
       } catch (e) {
         print(e.toString());
-        //showErrorDialog(context, error: e.toString());
       }
     //}
   }
@@ -142,18 +140,20 @@ class ServerViewModel extends ChangeNotifier {
         });
        // notifyListeners();
         // listen to the received data event stream
+        String ipAddress = await GetIp.ipAddress;
         _socket.listen((List<int> data) {
           try {
             String result = new String.fromCharCodes(data);
 
             if (result.contains('name')) {
               var message = Message.fromJson(json.decode(result));
+
               _messageList.insert(
                   0,
                   Message(
                       message: message.message,
                       name: message.name,
-                      user: message.name == getTCPData().name ? 0 : 1));
+                      user: ipAddress == message.ip ? 0 : 1));
               notifyListeners();
             }
           } catch (e) {
@@ -182,23 +182,27 @@ class ServerViewModel extends ChangeNotifier {
     await _socket.close();
   }
 
-  void sendMessage(context, TCPData tcpData, {bool isHost}) {
+  void sendMessage(context, TCPData tcpData, {bool isHost}) async{
     /* _messageList.insert(
         0, new Message(message: msg.text, user: 0, userID: null)); */
-    print("message " + isHost.toString());
-    var message = utf8.encode(json.encode(
-        Message(message: msg.text, name: tcpData?.name ?? '', user: isHost ? 0 : 1).toJson()));
+    print(ip.text + " " + getTCPData().ip);
+    messageList.forEach((element) {
+      print(element.toJson());
+    });
+    String senderIp = "";
+    if (!Platform.isMacOS) senderIp = await GetIp.ipAddress;
 
-    if (isHost) {
+    var message = utf8.encode(json.encode(
+        Message(message: msg.text, name: tcpData?.name ?? '',ip: senderIp).toJson()));
+
+    /*if (isHost) {
       print("host");
       _messageList.insert(
         0,
-        Message(message: msg.text, name: tcpData?.name, user: 0),
+        Message(message: msg.text, name: tcpData?.name),
       );
       notifyListeners();
-    }else{
-
-    }
+    }*/
 
     try {
       _socket.add(message);
