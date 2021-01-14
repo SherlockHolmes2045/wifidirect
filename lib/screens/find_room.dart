@@ -65,8 +65,10 @@ class _FindRoomState extends State<FindRoom> {
           provider.ip.text = ipTest;
           provider.port.text = "4000";
           provider.name.text = "test";
+          print("success");
           serverFound = true;
         }).timeout(Duration(milliseconds: 80), onTimeout: () {
+          print("timeout");
           return;
           throw "TimeOut";
         }).catchError((onError) {
@@ -85,7 +87,7 @@ class _FindRoomState extends State<FindRoom> {
       }
 
     }
-    if(serverFound) socket.close();
+    //if(serverFound) socket.close();
     print("recherche termninée");
     return serverFound ? provider.ip.text : ipAddress;
   }
