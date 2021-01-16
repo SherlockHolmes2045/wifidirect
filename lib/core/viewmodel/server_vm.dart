@@ -191,18 +191,18 @@ class ServerViewModel extends ChangeNotifier {
     });
     String senderIp = "";
     if (!Platform.isMacOS) senderIp = await GetIp.ipAddress;
-
+    print(senderIp);
     var message = utf8.encode(json.encode(
         Message(message: msg.text, name: tcpData?.name ?? '',ip: senderIp).toJson()));
 
-    /*if (isHost) {
+    if (isHost) {
       print("host");
       _messageList.insert(
         0,
-        Message(message: msg.text, name: tcpData?.name),
+        Message(message: msg.text, name: tcpData?.name,user: 0),
       );
       notifyListeners();
-    }*/
+    }
 
     try {
       _socket.add(message);
