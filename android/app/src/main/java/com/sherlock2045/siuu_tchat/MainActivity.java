@@ -232,7 +232,7 @@ public class MainActivity extends FlutterActivity {
 
 
     private Map<HashMap<String,String>,HashMap<String,String>> getDevices() {
-        Map<HashMap<String,String>,HashMap<String,String>> devices = new HashMap<HashMap<String,String>,HashMap<String,String>>();
+        Map<HashMap<String,String>,HashMap<String,String>> devices = new HashMap<>();
         for (int i = 0; i < peers.size(); i++){
             HashMap<String,String> newMap1 = new HashMap<String,String>();
             HashMap<String,String> newMap2 = new HashMap<String,String>();

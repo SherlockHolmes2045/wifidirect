@@ -77,7 +77,7 @@ class _FindRoomState extends State<FindRoom> {
           throw "Error";
         });
       }
-      print("i = " + i.toString());
+      //print("i = " + i.toString());
       if (serverFound) break;
       if(!serverFound && i == 255) {
         provider.ip.text = ipAddress;

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:siuu_tchat/route_generator.dart';
 import 'package:provider/provider.dart';
 import 'core/services/providerRegistrar.dart';
@@ -7,6 +10,7 @@ import 'core/services/providerRegistrar.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  createDb();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then(
     (_) {
       runApp(
@@ -41,4 +45,17 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
+createDb() async{
+  Directory tempDir = await getApplicationDocumentsDirectory();
+
+  final File file = File('${tempDir.path}/suiu.db');
+
+  file.exists().then((isThere) {
+
+    if (!isThere) {
+      file.create();
+    }
+
+  });
 }

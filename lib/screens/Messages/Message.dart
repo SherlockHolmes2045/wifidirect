@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/screens/Messages/chat.dart';
 import 'package:siuu_tchat/screens/Nearby.dart';
+import 'package:siuu_tchat/screens/chat_list.dart';
 
 import '../find_room.dart';
 import 'loader.dart';
@@ -203,7 +204,7 @@ class _MessageState extends State<Message> with SingleTickerProviderStateMixin {
         body: TabBarView(
           controller: _tabController,
           children: [
-            buildListView(),
+            ChatList(),
             FindRoom(),
             Nearby(),
           ],

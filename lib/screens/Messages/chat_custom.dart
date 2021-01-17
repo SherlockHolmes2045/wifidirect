@@ -11,6 +11,8 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
+import 'package:siuu_tchat/database/discussion_dao.dart';
+import 'package:siuu_tchat/model/discussion.dart';
 import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/utils/message_type.dart';
 import 'dart:io' as Io;
@@ -28,9 +30,10 @@ const kUrl =
 
 class Chat extends StatefulWidget {
   final String name;
+  final String chatId;
   final LocalFileSystem localFileSystem;
 
-  Chat({this.name})
+  Chat({this.name,this.chatId})
       :
         this.localFileSystem = LocalFileSystem();
 
@@ -209,6 +212,7 @@ class _ChatState extends State<Chat> {
   }
 
   addMessage(Status status, {String path = ""}) async {
+    DiscussionDao discussionDao = new DiscussionDao();
     if (Status.TEXT == status) {
       if (messageEditingController.text.isNotEmpty) {
         Map<String, dynamic> chatMessageMap = {
@@ -223,6 +227,7 @@ class _ChatState extends State<Chat> {
             {"message": messageEditingController.text, "type": "text"});
         setState(() {
           chats.add(chatMessageMap);
+          discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           messageEditingController.text = "";
         });
       }
@@ -242,6 +247,7 @@ class _ChatState extends State<Chat> {
           .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
       setState(() {
         chats.add(chatMessageMap);
+        discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
         messageEditingController.text = "";
       });
     }
@@ -331,6 +337,7 @@ class _ChatState extends State<Chat> {
   }
 
   pushReceivedMessage(String message, String type) {
+    DiscussionDao discussionDao = new DiscussionDao();
     switch (type) {
       case "image":
         {
@@ -344,6 +351,7 @@ class _ChatState extends State<Chat> {
           };
           setState(() {
             chats.add(chatMessageMap);
+            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           });
         }
         break;
@@ -359,6 +367,7 @@ class _ChatState extends State<Chat> {
           };
           setState(() {
             chats.add(chatMessageMap);
+            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           });
         }
         break;
