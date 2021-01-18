@@ -1,3 +1,5 @@
+import 'package:siuu_tchat/utils/message_type.dart';
+
 class Discussion{
   final bool sendBy;
   final String message;

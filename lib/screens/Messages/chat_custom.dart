@@ -227,7 +227,7 @@ class _ChatState extends State<Chat> {
             {"message": messageEditingController.text, "type": "text"});
         setState(() {
           chats.add(chatMessageMap);
-          discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
+          discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"text",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           messageEditingController.text = "";
         });
       }
@@ -247,7 +247,7 @@ class _ChatState extends State<Chat> {
           .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
       setState(() {
         chats.add(chatMessageMap);
-        discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
+        discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"image",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
         messageEditingController.text = "";
       });
     }
@@ -351,7 +351,7 @@ class _ChatState extends State<Chat> {
           };
           setState(() {
             chats.add(chatMessageMap);
-            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
+            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"image",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           });
         }
         break;
@@ -367,7 +367,7 @@ class _ChatState extends State<Chat> {
           };
           setState(() {
             chats.add(chatMessageMap);
-            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],chatMessageMap['type'],chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
+            discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"text",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
           });
         }
         break;
@@ -429,11 +429,11 @@ class _ChatState extends State<Chat> {
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
+                /*Container(
                   height: MediaQuery.of(context).size.height/5,
                     width: MediaQuery.of(context).size.width/2,
                     child: _buildPlayer()
-                ),
+                ),*/
                 Container(
                   alignment: Alignment.bottomCenter,
                   width: MediaQuery.of(context).size.width,

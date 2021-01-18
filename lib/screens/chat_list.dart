@@ -10,6 +10,8 @@ class ChatList extends StatefulWidget {
 class _ChatListState extends State<ChatList> {
   List<Chat> chats = new List<Chat>();
   ChatDao chatDao = new ChatDao();
+
+
   @override
   void initState() {
     getAllChats();
@@ -18,6 +20,10 @@ class _ChatListState extends State<ChatList> {
 
   @override
   Widget build(BuildContext context) {
+
+    /*WidgetsBinding.instance.addPostFrameCallback((_) {
+      getAllChats();
+    });*/
     return Scaffold(
         body: ListView.separated(
             itemBuilder: (BuildContext context, int index) {
@@ -63,8 +69,10 @@ class _ChatListState extends State<ChatList> {
   getAllChats() async {
     List<Chat> data = new List<Chat>();
     chatDao.getAll().then((value) {
-      print(value);
-      chats = value;
+      print(value[0].receiverName);
+      setState(() {
+        chats = value;
+      });
     });
     return data;
   }
