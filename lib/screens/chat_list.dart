@@ -69,7 +69,6 @@ class _ChatListState extends State<ChatList> {
   getAllChats() async {
     List<Chat> data = new List<Chat>();
     chatDao.getAll().then((value) {
-      print(value[0].receiverName);
       setState(() {
         chats = value;
       });
