@@ -374,12 +374,61 @@ class _ChatState extends State<Chat> {
     }
   }
 
+  getMessages() async{
+
+    DiscussionDao discussionDao = new DiscussionDao();
+    List<Discussion> messages = List<Discussion>();
+    discussionDao.getAll(widget.chatId).then((value){
+      print(value);
+      messages = value;
+    });
+
+    List<Map<String, dynamic>> savedChats = new List<Map<String, dynamic>>();
+
+    messages.forEach((element) {
+      print(element.type);
+      switch (element.type) {
+        case "image":
+          {
+            Map<String, dynamic> chatMessageMap = {
+              "sendBy": element.sendBy,
+              "message": element.message,
+              "time": element.time,
+              "type": Status.IMAGE,
+              "path": element.path,
+              "byte": element.byte
+            };
+              savedChats.add(chatMessageMap);
+          }
+          break;
+        case "text":
+          {
+            Map<String, dynamic> chatMessageMap = {
+              "sendBy": element.sendBy,
+              "message": element.message,
+              "time": DateTime.now().millisecondsSinceEpoch,
+              "type": Status.TEXT,
+              "path": element.path,
+              "byte": element.byte
+            };
+              savedChats.add(chatMessageMap);
+          }
+          break;
+      }
+    });
+    print(savedChats);
+    setState(() {
+      print("chargement des anciens messages");
+      chats = savedChats;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _init();
     initAudioPlayer();
+    getMessages();
     _enableTimer();
   }
 

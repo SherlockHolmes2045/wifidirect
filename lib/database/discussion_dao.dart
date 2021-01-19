@@ -36,11 +36,13 @@ class DiscussionDao{
      );
    }
 
-   Future<List<Discussion>> getAll() async {
+   Future<List<Discussion>> getAll(String chatId) async {
      // Finder object can also sort data.
-     final finder = Finder(sortOrders: [
-       SortOrder('receiverName'),
-     ]);
+     final finder = Finder(
+       filter: Filter.and([
+         Filter.equals("chatId",chatId),
+       ])
+     );
 
      final recordSnapshots = await _chatStore.find(
        await _db,
