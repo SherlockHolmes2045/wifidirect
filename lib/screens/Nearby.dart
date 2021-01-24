@@ -34,6 +34,7 @@ class _NearbyState extends State<Nearby> {
               },
               itemCount: devices.length,
               itemBuilder: (BuildContext context, int index) {
+                print(devices.length);
                 return ListTile(
                   title: Text(devices[index].deviceName),
                   onTap: () async {
@@ -48,11 +49,13 @@ class _NearbyState extends State<Nearby> {
                        });
                      }
                    });
+
+                   String address = await platform.invokeMethod('bluetooth');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              Chat(name: devices[index].deviceName,chatId: devices[index].deviceAddres,)),
+                              Chat(name: devices[index].deviceName,chatId: devices[index].deviceAddres,bleAddress: devices[index].bleAddres,)),
                     );
                   },
                 );
@@ -74,9 +77,7 @@ class _NearbyState extends State<Nearby> {
             await platform.invokeMethod('getDevices');
         setState(() {
           devices = result.entries
-              .map((element) =>
-                  Device(element.key['name'], element.value["address"]))
-              .toList();
+              .map((element) => Device(element.key['name'], element.value["address"].split(" ")[0],element.value["address"].split(" ")[1])).toList();
         });
       }
     });

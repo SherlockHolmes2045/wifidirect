@@ -74,7 +74,7 @@ class PlaygroundState extends State<Playground> {
       if(msg != null){
         Map<dynamic,dynamic> result = await  platform.invokeMethod('getDevices');
 
-        List<Device> devices = result.entries.map((element) => Device(element.key['name'],element.value["address"])).toList();
+        List<Device> devices = result.entries.map((element) => Device(element.key['name'],element.value["address"],"")).toList();
         print("from flutter" + devices.toString());
       }
 

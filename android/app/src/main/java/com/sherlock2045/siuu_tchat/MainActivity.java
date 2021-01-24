@@ -2,6 +2,7 @@ package com.sherlock2045.siuu_tchat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -138,11 +139,13 @@ public class MainActivity extends FlutterActivity {
                                 String address = call.argument("address");
                                 connectToPeer(address);
                                 result.success("yes");
-                            }else if(call.method.equals("sendMessage")){
+                            }else if(call.method.equals("sendMessage")) {
                                 String message = call.argument("message");
                                 String type = call.argument("type");
-                                sendMessage(message,type);
+                                sendMessage(message, type);
                                 result.success("good");
+                            }else if(call.method.equals("bluetooth")){
+                                result.success(getBluetoothMac(getApplicationContext()));
                             } else {
                                 result.notImplemented();
                             }
@@ -233,11 +236,12 @@ public class MainActivity extends FlutterActivity {
 
     private Map<HashMap<String,String>,HashMap<String,String>> getDevices() {
         Map<HashMap<String,String>,HashMap<String,String>> devices = new HashMap<>();
+        String bleAddress = getBluetoothMac(getApplicationContext());
         for (int i = 0; i < peers.size(); i++){
             HashMap<String,String> newMap1 = new HashMap<String,String>();
             HashMap<String,String> newMap2 = new HashMap<String,String>();
             newMap1.put("name",peers.get(i).deviceName);
-            newMap2.put("address",peers.get(i).deviceAddress);
+            newMap2.put("address",peers.get(i).deviceAddress + " " + bleAddress);
             devices.put(newMap1,newMap2);
         };
         return devices;
@@ -337,6 +341,25 @@ public class MainActivity extends FlutterActivity {
 
     private String[] getDevicesList() {
         return deviceNameArray;
+    }
+
+    private String getBluetoothMac(final Context context) {
+
+        String result = null;
+        if (context.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Hardware ID are restricted in Android 6+
+                // https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-hardware-id
+                // Getting bluetooth mac via reflection for devices with Android 6+
+                result = android.provider.Settings.Secure.getString(context.getContentResolver(),
+                        "bluetooth_address");
+            } else {
+                BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+                result = bta != null ? bta.getAddress() : "";
+            }
+        }
+        return result;
     }
 
     void startListening(Object listener, EventChannel.EventSink emitter) {

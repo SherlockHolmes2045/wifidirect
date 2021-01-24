@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,7 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 
 enum PlayerState { stopped, playing, paused }
 
@@ -31,9 +34,10 @@ const kUrl =
 class Chat extends StatefulWidget {
   final String name;
   final String chatId;
+  final String bleAddress;
   final LocalFileSystem localFileSystem;
 
-  Chat({this.name,this.chatId})
+  Chat({this.name,this.chatId,this.bleAddress})
       :
         this.localFileSystem = LocalFileSystem();
 
@@ -44,6 +48,7 @@ class Chat extends StatefulWidget {
 class _ChatState extends State<Chat> {
 
   String audioText = "Maintenez pour enregister";
+  BluetoothConnection connection;
   bool recordMode = false;
   AudioPlayer audioPlugin = AudioPlayer();
   List<Map<String, dynamic>> chats = new List<Map<String, dynamic>>();
@@ -223,8 +228,7 @@ class _ChatState extends State<Chat> {
           'path': path,
           'byte': false
         };
-        await platform.invokeMethod("sendMessage",
-            {"message": messageEditingController.text, "type": "text"});
+        await platform.invokeMethod("sendMessage", {"message": messageEditingController.text, "type": "text"});
         setState(() {
           chats.add(chatMessageMap);
           discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"text",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
@@ -241,10 +245,11 @@ class _ChatState extends State<Chat> {
         'byte': false
       };
       final image = Io.File(path).readAsBytesSync();
+      send(image);
       String imageStr = base64.encode(image);
       print(imageStr);
-      await platform
-          .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});
+      /*await platform
+          .invokeMethod("sendMessage", {"message": imageStr, "type": "image"});*/
       setState(() {
         chats.add(chatMessageMap);
         discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"image",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
@@ -403,7 +408,7 @@ class _ChatState extends State<Chat> {
               Map<String, dynamic> chatMessageMap = {
                 "sendBy": element.sendBy,
                 "message": element.message,
-                "time": DateTime.now().millisecondsSinceEpoch,
+                "time": element.time,
                 "type": Status.TEXT,
                 "path": element.path,
                 "byte": element.byte
@@ -421,12 +426,35 @@ class _ChatState extends State<Chat> {
     });
   }
 
+  Future send(Uint8List data) async {
+    connection.output.add(data);
+    await connection.output.allSent;
+  }
+  initBluetooth() async{
+    try {
+      connection = await BluetoothConnection.toAddress(widget.bleAddress);
+      print('Connected to the device');
+
+      connection.input.listen((Uint8List data) {
+        print('Data incoming: ${ascii.decode(data)}');
+
+      }).onDone(() {
+        print('Disconnected by remote request');
+      });
+    }
+    catch (exception) {
+      print('Cannot connect, exception occured');
+    }
+  }
+
   @override
   void initState() {
+    print(widget.bleAddress);
     super.initState();
     _init();
     initAudioPlayer();
     getMessages();
+    initBluetooth();
     _enableTimer();
   }
 
@@ -442,7 +470,6 @@ class _ChatState extends State<Chat> {
 
   @override
   Widget build(BuildContext context) {
-    print(chats);
     /*chats.add({
       "sendBy": true,
       "message": "Lorem ipsum",
@@ -452,15 +479,21 @@ class _ChatState extends State<Chat> {
       "sendBy": true,
       "message": "Lorem ipsum",
       "time": DateTime.now().millisecondsSinceEpoch,
-    });
+    });*/
+
+    /*print(base64.encode(Io.File("/storage/emulated/0/Pictures/Wallpaper/wallpaper_06.jpg").readAsBytesSync()));
+    String foo = b64.split('.')[0];
     chats.add({
       "sendBy": false,
       "message": "Lorem ipsum",
       "time": DateTime.now().millisecondsSinceEpoch,
+      "type": Status.IMAGE,
+      "byte": true,
+      "path": b64,
     });*/
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
-    print(chats);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -540,9 +573,16 @@ class _ChatState extends State<Chat> {
                         ),
                         GestureDetector(
                           onTap: () async {
-                            File result =
-                                await FilePicker.getFile(type: FileType.image);
-                            addMessage(Status.IMAGE, path: result.path);
+
+                            Io.File result =
+                                await FilePicker.getFile(type: FileType.image,);
+                            print(result.path);
+                            double sizeInMb = result.lengthSync() / (1024 * 1024);
+                            if(sizeInMb <= 1){
+                              Io.File compressedFile = await FlutterNativeImage.compressImage(result.path,
+                                  quality: 5);
+                              addMessage(Status.IMAGE, path: compressedFile.path);
+                            }
                           },
                           child: Container(
                             height: 40,
@@ -754,8 +794,8 @@ class _ChatState extends State<Chat> {
   void _updateTimer(timer) {
     debugPrint("Timer $timer");
     var dispatch = timer.split(" ");
-    pushReceivedMessage(timer.substring(0, timer.lastIndexOf(" ")),
-        dispatch[dispatch.length - 1]);
+    //print(timer.substring(0, timer.lastIndexOf(" ")));
+    pushReceivedMessage(timer.substring(0, timer.lastIndexOf(" ")), dispatch[dispatch.length - 1]);
   }
 }
 

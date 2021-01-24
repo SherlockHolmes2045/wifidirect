@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:siuu_tchat/database/chat_dao.dart';
+import 'package:siuu_tchat/database/discussion_dao.dart';
 import 'package:siuu_tchat/model/chat.dart';
+import 'package:siuu_tchat/model/discussion.dart';
+import 'package:siuu_tchat/utils/message_type.dart';
 
 class ChatList extends StatefulWidget {
   @override
@@ -10,7 +13,45 @@ class ChatList extends StatefulWidget {
 class _ChatListState extends State<ChatList> {
   List<Chat> chats = new List<Chat>();
   ChatDao chatDao = new ChatDao();
+  List<Map<String, dynamic>> savedChats = new List<Map<String, dynamic>>();
+  
+    DiscussionDao discussionDao = new DiscussionDao();
+    List<Discussion> messages = List<Discussion>();
 
+    /*discussionDao.getAll(chatId).then((value){
+      messages = value;
+      messages.forEach((element) {
+        print(element.type);
+        switch (element.type) {
+          case "image":
+            {
+              Map<String, dynamic> chatMessageMap = {
+                "sendBy": element.sendBy,
+                "message": element.message,
+                "time": element.time,
+                "type": Status.IMAGE,
+                "path": element.path,
+                "byte": element.byte
+              };
+              savedChats.add(chatMessageMap);
+            }
+            break;
+          case "text":
+            {
+              Map<String, dynamic> chatMessageMap = {
+                "sendBy": element.sendBy,
+                "message": element.message,
+                "time": DateTime.now().millisecondsSinceEpoch,
+                "type": Status.TEXT,
+                "path": element.path,
+                "byte": element.byte
+              };
+              savedChats.add(chatMessageMap);
+            }
+            break;
+        }
+      });
+    });*/
 
   @override
   void initState() {
@@ -21,12 +62,10 @@ class _ChatListState extends State<ChatList> {
   @override
   Widget build(BuildContext context) {
 
-    /*WidgetsBinding.instance.addPostFrameCallback((_) {
-      getAllChats();
-    });*/
     return Scaffold(
         body: ListView.separated(
             itemBuilder: (BuildContext context, int index) {
+             // getMessagesForChat(chats[index].chatId);
               return ListTile(
                   leading: Image.asset('assets/images/person1.png'),
                   title: Text(
@@ -38,7 +77,7 @@ class _ChatListState extends State<ChatList> {
                     ),
                   ),
                   subtitle: Text(
-                    "Dernier message du chat",
+                    savedChats[savedChats.length-1]["message"],
                     style: TextStyle(
                       fontFamily: "Segoe UI",
                       fontWeight: FontWeight.w300,
