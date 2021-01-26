@@ -56,7 +56,7 @@ class _FindRoomState extends State<FindRoom> {
     provider.port.text = "4000";
     provider.name.text = "test";
     Socket socket;
-    print(ipAddress);
+    //print(ipAddress);
     for (int i = 1; i <= 255; i++) {
       if (i != networkPartInt) {
         String ipTest = network + "." + i.toString();
@@ -68,11 +68,11 @@ class _FindRoomState extends State<FindRoom> {
           print("success");
           serverFound = true;
         }).timeout(Duration(milliseconds: 80), onTimeout: () {
-          print("timeout");
+          //print("timeout");
           return;
           throw "TimeOut";
         }).catchError((onError) {
-          print(onError);
+          //print(onError);
           return;
           throw "Error";
         });

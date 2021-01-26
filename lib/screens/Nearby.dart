@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:siuu_tchat/database/chat_dao.dart';
-import 'file:///D:/dev/Programmes/AndroidStudioProjects/siuu/siuu_tchat/lib/model/Device.dart';
+import 'package:siuu_tchat/model/Device.dart';
 import '../events.dart';
 import 'Messages/chat_custom.dart';
 import 'package:siuu_tchat/model/chat.dart' as chatModel;
+import 'package:siuu_tchat/custom/radar.dart';
 
 class Nearby extends StatefulWidget {
   @override
@@ -28,13 +29,12 @@ class _NearbyState extends State<Nearby> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-          child: ListView.separated(
+          child: Radar(devices)/*ListView.separated(
               separatorBuilder: (BuildContext context, int index) {
                 return Divider();
               },
               itemCount: devices.length,
               itemBuilder: (BuildContext context, int index) {
-                print(devices.length);
                 return ListTile(
                   title: Text(devices[index].deviceName),
                   onTap: () async {
@@ -49,8 +49,6 @@ class _NearbyState extends State<Nearby> {
                        });
                      }
                    });
-
-                   String address = await platform.invokeMethod('bluetooth');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -59,7 +57,8 @@ class _NearbyState extends State<Nearby> {
                     );
                   },
                 );
-              })),
+              })*/
+              ),
     );
   }
 
@@ -76,6 +75,7 @@ class _NearbyState extends State<Nearby> {
         Map<dynamic, dynamic> result =
             await platform.invokeMethod('getDevices');
         setState(() {
+          print(result.entries);
           devices = result.entries
               .map((element) => Device(element.key['name'], element.value["address"].split(" ")[0],element.value["address"].split(" ")[1])).toList();
         });

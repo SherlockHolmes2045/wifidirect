@@ -388,7 +388,6 @@ class _ChatState extends State<Chat> {
       List<Map<String, dynamic>> savedChats = new List<Map<String, dynamic>>();
 
       messages.forEach((element) {
-        print(element.type);
         switch (element.type) {
           case "image":
             {
@@ -418,7 +417,6 @@ class _ChatState extends State<Chat> {
             break;
         }
       });
-      print(savedChats);
       setState(() {
         print("chargement des anciens messages");
         chats = savedChats;
@@ -437,20 +435,21 @@ class _ChatState extends State<Chat> {
 
       connection.input.listen((Uint8List data) {
         print('Data incoming: ${ascii.decode(data)}');
+        pushReceivedMessage(base64.encode(data), "image");
 
       }).onDone(() {
         print('Disconnected by remote request');
       });
     }
     catch (exception) {
-      print('Cannot connect, exception occured');
+      print('Cannot connect, exception occured ' + exception.toString());
     }
   }
 
   @override
   void initState() {
-    print(widget.bleAddress);
     super.initState();
+    print("bleaddress " + widget.bleAddress);
     _init();
     initAudioPlayer();
     getMessages();

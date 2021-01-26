@@ -103,7 +103,6 @@ public class MainActivity extends FlutterActivity {
                     String tempMsg = new String(readBuff,0,msg.arg1);
                     addMessage(tempMsg);
                     newMessage = true;
-                    System.out.println(messages);
                     System.out.println("received message" + tempMsg);
                     //send text
                     break;
@@ -176,14 +175,12 @@ public class MainActivity extends FlutterActivity {
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
                                         (Long timer) -> {
-                                            Log.w(TAG, newMessage + "");
                                             if(newMessage)
                                             {
                                                 System.out.println("sending message to flutter");
                                                 events.success(messages.size()>0 ? messages.get(messages.size()-1) : null);
                                                 newMessage = false;
                                             }
-
 
                                         },
                                         (Throwable error) -> {
@@ -280,8 +277,8 @@ public class MainActivity extends FlutterActivity {
                     deviceArray[index] = device;
                     index++;
                 }
-                System.out.println(Arrays.toString(deviceNameArray));
-                System.out.println(Arrays.toString(deviceArray));
+                /*System.out.println(Arrays.toString(deviceNameArray));
+                System.out.println(Arrays.toString(deviceArray));*/
             }
 
             if (peers.size() == 0) {
