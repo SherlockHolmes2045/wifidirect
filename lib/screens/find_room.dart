@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get_ip/get_ip.dart';
 import 'package:ping_discover_network/ping_discover_network.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
@@ -118,7 +119,9 @@ class _FindRoomState extends State<FindRoom> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text("Chargement..."),
-                      CircularProgressIndicator()
+                      SpinKitThreeBounce(
+                        color: Colors.redAccent,
+                      )
                     ],
                   ),
                 );

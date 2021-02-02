@@ -3,7 +3,7 @@ import 'package:siuu_tchat/database/chat_dao.dart';
 import 'package:siuu_tchat/database/discussion_dao.dart';
 import 'package:siuu_tchat/model/chat.dart';
 import 'package:siuu_tchat/model/discussion.dart';
-import 'package:siuu_tchat/utils/message_type.dart';
+import 'package:siuu_tchat/screens/Messages/chat_custom.dart' as ChatDiscussion;
 
 class ChatList extends StatefulWidget {
   @override
@@ -13,60 +13,34 @@ class ChatList extends StatefulWidget {
 class _ChatListState extends State<ChatList> {
   List<Chat> chats = new List<Chat>();
   ChatDao chatDao = new ChatDao();
-  List<Map<String, dynamic>> savedChats = new List<Map<String, dynamic>>();
-  
-    DiscussionDao discussionDao = new DiscussionDao();
-    List<Discussion> messages = List<Discussion>();
-
-    /*discussionDao.getAll(chatId).then((value){
-      messages = value;
-      messages.forEach((element) {
-        print(element.type);
-        switch (element.type) {
-          case "image":
-            {
-              Map<String, dynamic> chatMessageMap = {
-                "sendBy": element.sendBy,
-                "message": element.message,
-                "time": element.time,
-                "type": Status.IMAGE,
-                "path": element.path,
-                "byte": element.byte
-              };
-              savedChats.add(chatMessageMap);
-            }
-            break;
-          case "text":
-            {
-              Map<String, dynamic> chatMessageMap = {
-                "sendBy": element.sendBy,
-                "message": element.message,
-                "time": DateTime.now().millisecondsSinceEpoch,
-                "type": Status.TEXT,
-                "path": element.path,
-                "byte": element.byte
-              };
-              savedChats.add(chatMessageMap);
-            }
-            break;
-        }
-      });
-    });*/
+  DiscussionDao discussionDao = new DiscussionDao();
 
   @override
   void initState() {
-    getAllChats();
+    chatDao.getAll().then((value) {
+      print(value);
+      setState(() {
+        chats = value;
+      });
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         body: ListView.separated(
             itemBuilder: (BuildContext context, int index) {
-             // getMessagesForChat(chats[index].chatId);
+              List<Discussion> messages = List<Discussion>();
+              discussionDao.getAll(chats[index].chatId).then((value) {
+                print("messages" + messages.toString());
+                messages = value;
+              });
               return ListTile(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDiscussion.Chat(name: chats[index].receiverName,chatId: chats[index].chatId,bleAddress: "",) ),
+                  );
+                },
                   leading: Image.asset('assets/images/person1.png'),
                   title: Text(
                     chats[index].receiverName,
@@ -77,7 +51,7 @@ class _ChatListState extends State<ChatList> {
                     ),
                   ),
                   subtitle: Text(
-                    savedChats[savedChats.length-1]["message"],
+                    "test",
                     style: TextStyle(
                       fontFamily: "Segoe UI",
                       fontWeight: FontWeight.w300,
@@ -103,15 +77,5 @@ class _ChatListState extends State<ChatList> {
               return Divider();
             },
             itemCount: chats.length));
-  }
-
-  getAllChats() async {
-    List<Chat> data = new List<Chat>();
-    chatDao.getAll().then((value) {
-      setState(() {
-        chats = value;
-      });
-    });
-    return data;
   }
 }

@@ -115,7 +115,6 @@ class _RadarState extends State<Radar> {
   Widget build(BuildContext context) {
     double size = MediaQuery.of(context).size.width - 16;
     double height = MediaQuery.of(context).size.height - 32;
-    print(peers);
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,

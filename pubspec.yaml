@@ -60,6 +60,7 @@ dependencies:
   flutter_native_image: ^0.0.5+3
   flutter_bluetooth_serial: ^0.2.2
   flutter_blue: ^0.7.3
+  assets_audio_player: ^2.0.13
 
 
 dev_dependencies:

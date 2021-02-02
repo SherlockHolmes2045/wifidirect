@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:audioplayer/audioplayer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
-import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:siuu_tchat/custom/audio.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/database/discussion_dao.dart';
 import 'package:siuu_tchat/model/discussion.dart';
@@ -24,12 +22,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 
-enum PlayerState { stopped, playing, paused }
-
-typedef void OnError(Exception exception);
-
-const kUrl =
-    "https://www.mediacollege.com/downloads/sound-effects/nature/forest/rainforest-ambient.mp3";
 
 class Chat extends StatefulWidget {
   final String name;
@@ -50,34 +42,10 @@ class _ChatState extends State<Chat> {
   String audioText = "Maintenez pour enregister";
   BluetoothConnection connection;
   bool recordMode = false;
-  AudioPlayer audioPlugin = AudioPlayer();
   List<Map<String, dynamic>> chats = new List<Map<String, dynamic>>();
   FlutterAudioRecorder _recorder;
   Recording _current;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
-
-  Duration duration;
-  Duration position;
-
-  AudioPlayer audioPlayer;
-
-  String localFilePath;
-
-  PlayerState playerState = PlayerState.stopped;
-
-  get isPlaying => playerState == PlayerState.playing;
-  get isPaused => playerState == PlayerState.paused;
-
-  get durationText =>
-      duration != null ? duration.toString().split('.').first : '';
-
-  get positionText =>
-      position != null ? position.toString().split('.').first : '';
-
-  bool isMuted = false;
-
-  StreamSubscription _positionSubscription;
-  StreamSubscription _audioPlayerStateSubscription;
 
 
   static const platform = const MethodChannel('samples.flutter.dev/battery');
@@ -117,7 +85,7 @@ class _ChatState extends State<Chat> {
                                   sendByMe: chats[index]["sendBy"],
                                   byte: chats[index]["byte"],
                                 )
-                              : Container(child: Text("audio")),
+                              : AudioTile(path: chats[index]["path"],sendByMe:chats[index]["sendBy"],byte: chats[index]["byte"],)
                     ],
                   );
                 }),
@@ -134,87 +102,6 @@ class _ChatState extends State<Chat> {
     );
   }
 
-  Widget _buildPlayer() => Container(
-    padding: EdgeInsets.all(16.0),
-    child: Column(
-      children: [
-        Row(children: [
-          IconButton(
-            onPressed: isPlaying ? null : () => play(),
-            iconSize: 20.0,
-            icon: Icon(Icons.play_arrow),
-            color: Colors.cyan,
-          ),
-          IconButton(
-            onPressed: isPlaying ? () => pause() : null,
-            iconSize: 20.0,
-            icon: Icon(Icons.pause),
-            color: Colors.cyan,
-          ),
-          IconButton(
-            onPressed: isPlaying || isPaused ? () => stop() : null,
-            iconSize: 20.0,
-            icon: Icon(Icons.stop),
-            color: Colors.cyan,
-          ),
-        ]),
-        if (duration != null)
-          Container(
-            width: MediaQuery.of(context).size.height/4,
-            child: Slider(
-                value: position?.inMilliseconds?.toDouble() ?? 0.0,
-                onChanged: (double value) {
-                  return audioPlayer.seek((value / 1000).roundToDouble());
-                },
-                min: 0.0,
-                max: duration.inMilliseconds.toDouble()),
-          ),
-      ],
-    ),
-  );
-
-  Row _buildProgressView() => Row(mainAxisSize: MainAxisSize.min, children: [
-    Padding(
-      padding: EdgeInsets.all(12.0),
-      child: CircularProgressIndicator(
-        value: position != null && position.inMilliseconds > 0
-            ? (position?.inMilliseconds?.toDouble() ?? 0.0) /
-            (duration?.inMilliseconds?.toDouble() ?? 0.0)
-            : 0.0,
-        valueColor: AlwaysStoppedAnimation(Colors.cyan),
-        backgroundColor: Colors.grey.shade400,
-      ),
-    ),
-    Text(
-      position != null
-          ? "${positionText ?? ''} / ${durationText ?? ''}"
-          : duration != null ? durationText : '',
-      style: TextStyle(fontSize: 24.0),
-    )
-  ]);
-
-  Row _buildMuteButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        if (!isMuted)
-          FlatButton.icon(
-            onPressed: () => mute(true),
-            icon: Icon(
-              Icons.headset_off,
-              color: Colors.cyan,
-            ),
-            label: Text('Mute', style: TextStyle(color: Colors.cyan)),
-          ),
-        if (isMuted)
-          FlatButton.icon(
-            onPressed: () => mute(false),
-            icon: Icon(Icons.headset, color: Colors.cyan),
-            label: Text('Unmute', style: TextStyle(color: Colors.cyan)),
-          ),
-      ],
-    );
-  }
 
   addMessage(Status status, {String path = ""}) async {
     DiscussionDao discussionDao = new DiscussionDao();
@@ -255,90 +142,21 @@ class _ChatState extends State<Chat> {
         discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"image",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
         messageEditingController.text = "";
       });
-    }
-  }
-  void initAudioPlayer() {
-    audioPlayer = AudioPlayer();
-    _positionSubscription = audioPlayer.onAudioPositionChanged
-        .listen((p) => setState(() => position = p));
-    _audioPlayerStateSubscription =
-        audioPlayer.onPlayerStateChanged.listen((s) {
-          if (s == AudioPlayerState.PLAYING) {
-            setState(() => duration = audioPlayer.duration);
-          } else if (s == AudioPlayerState.STOPPED) {
-            onComplete();
-            setState(() {
-              position = duration;
-            });
-          }
-        }, onError: (msg) {
-          setState(() {
-            playerState = PlayerState.stopped;
-            duration = Duration(seconds: 0);
-            position = Duration(seconds: 0);
-          });
-        });
-  }
-
-  Future play() async {
-    await audioPlayer.play(kUrl);
-    setState(() {
-      playerState = PlayerState.playing;
-    });
-  }
-
-  Future _playLocal() async {
-    await audioPlayer.play(localFilePath, isLocal: true);
-    setState(() => playerState = PlayerState.playing);
-  }
-
-  Future pause() async {
-    await audioPlayer.pause();
-    setState(() => playerState = PlayerState.paused);
-  }
-
-  Future stop() async {
-    await audioPlayer.stop();
-    setState(() {
-      playerState = PlayerState.stopped;
-      position = Duration();
-    });
-  }
-
-  Future mute(bool muted) async {
-    await audioPlayer.mute(muted);
-    setState(() {
-      isMuted = muted;
-    });
-  }
-
-  void onComplete() {
-    setState(() => playerState = PlayerState.stopped);
-  }
-
-  Future<Uint8List> _loadFileBytes(String url, {OnError onError}) async {
-    Uint8List bytes;
-    try {
-      bytes = await readBytes(url);
-    } on ClientException {
-      rethrow;
-    }
-    return bytes;
-  }
-
-  Future _loadFile() async {
-    final bytes = await _loadFileBytes(kUrl,
-        onError: (Exception exception) =>
-            print('_loadFile => exception $exception'));
-
-    final dir = await getApplicationDocumentsDirectory();
-    final file = Io.File('${dir.path}/audio.mp3');
-
-    await file.writeAsBytes(bytes);
-    if (await file.exists())
+    }else if (Status.AUDIO == status){
+      Map<String, dynamic> chatMessageMap = {
+        "sendBy": true,
+        "message": messageEditingController.text,
+        'time': DateTime.now().millisecondsSinceEpoch,
+        'type': status,
+        'path': path,
+        'byte': false
+      };
       setState(() {
-        localFilePath = file.path;
+        chats.add(chatMessageMap);
+        discussionDao.insert(Discussion(chatMessageMap['sendBy'],chatMessageMap['message'],chatMessageMap['time'],"image",chatMessageMap['path'],chatMessageMap['byte'],widget.chatId));
+        messageEditingController.text = "";
       });
+    }
   }
 
   pushReceivedMessage(String message, String type) {
@@ -451,7 +269,6 @@ class _ChatState extends State<Chat> {
     super.initState();
     print("bleaddress " + widget.bleAddress);
     _init();
-    initAudioPlayer();
     getMessages();
     initBluetooth();
     _enableTimer();
@@ -459,9 +276,6 @@ class _ChatState extends State<Chat> {
 
   @override
   void dispose() {
-    _positionSubscription.cancel();
-    _audioPlayerStateSubscription.cancel();
-    audioPlayer.stop();
     _disableTimer();
     super.dispose();
 
@@ -481,14 +295,14 @@ class _ChatState extends State<Chat> {
     });*/
 
     /*print(base64.encode(Io.File("/storage/emulated/0/Pictures/Wallpaper/wallpaper_06.jpg").readAsBytesSync()));
-    String foo = b64.split('.')[0];
-    chats.add({
+    String foo = b64.split('.')[0];*/
+    /*chats.add({
       "sendBy": false,
-      "message": "Lorem ipsum",
+      "message": "/storage/emulated/0/1.jpg",
       "time": DateTime.now().millisecondsSinceEpoch,
       "type": Status.IMAGE,
-      "byte": true,
-      "path": b64,
+      "byte": false,
+      "path": "/storage/emulated/0/1.jpg",
     });*/
     final double height = MediaQuery.of(context).size.height;
     final double width = MediaQuery.of(context).size.width;
@@ -508,11 +322,6 @@ class _ChatState extends State<Chat> {
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                /*Container(
-                  height: MediaQuery.of(context).size.height/5,
-                    width: MediaQuery.of(context).size.width/2,
-                    child: _buildPlayer()
-                ),*/
                 Container(
                   alignment: Alignment.bottomCenter,
                   width: MediaQuery.of(context).size.width,
@@ -575,7 +384,7 @@ class _ChatState extends State<Chat> {
 
                             Io.File result =
                                 await FilePicker.getFile(type: FileType.image,);
-                            print(result.path);
+                            print("path " + result.path);
                             double sizeInMb = result.lengthSync() / (1024 * 1024);
                             if(sizeInMb <= 1){
                               Io.File compressedFile = await FlutterNativeImage.compressImage(result.path,
@@ -753,6 +562,7 @@ class _ChatState extends State<Chat> {
     print("Stop recording: ${result.path}");
     print("Stop recording: ${result.duration}");
     File file = widget.localFileSystem.file(result.path);
+    addMessage(Status.AUDIO,path: result.path);
     print("File length: ${await file.length()}");
     setState(() {
       _current = result;
@@ -797,7 +607,35 @@ class _ChatState extends State<Chat> {
     pushReceivedMessage(timer.substring(0, timer.lastIndexOf(" ")), dispatch[dispatch.length - 1]);
   }
 }
+class AudioTile extends StatefulWidget {
+  final String path;
+  final bool byte;
+  final bool sendByMe;
 
+  AudioTile(
+  {@required this.path,@required this.byte,@required this.sendByMe}
+  );
+
+  @override
+  _AudioTileState createState()  => _AudioTileState();
+
+}
+
+class _AudioTileState extends State<AudioTile> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: EdgeInsets.only(
+        top: 8,
+        bottom: 8,
+        left: widget.sendByMe ? 0 : 24,
+        right: widget.sendByMe ? 24 : 0),
+    alignment:
+    widget.sendByMe ? Alignment.centerRight : Alignment.centerLeft,
+    child: MyAudioPlayer(filePath: widget.path,)
+    );
+  }
+}
 class ImageTile extends StatefulWidget {
   final String path;
   final bool sendByMe;
@@ -846,25 +684,46 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-          top: 8, bottom: 8, left: sendByMe ? 0 : 24, right: sendByMe ? 24 : 0),
-      alignment: sendByMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin:
-            sendByMe ? EdgeInsets.only(left: 30) : EdgeInsets.only(right: 30),
-        padding: EdgeInsets.only(top: 17, bottom: 17, left: 20, right: 20),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15.00),
-            gradient: sendByMe ? greyGradient : linearGradient),
-        child: Text(message,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontFamily: "Segoe UI",
-            )),
-      ),
+    double minValue = 8.0;
+    return Column(
+      crossAxisAlignment: sendByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: sendByMe
+              ? EdgeInsets.only(right: 0.0, bottom: minValue * 2, left: 200.0)
+              : EdgeInsets.only(right: 200.0, bottom: minValue * 2, left: 0.0),
+          padding: EdgeInsets.all(minValue),
+          height: 55.0,
+          decoration: BoxDecoration(
+        borderRadius: sendByMe
+        ? BorderRadius.only(
+        topLeft: Radius.circular(minValue * 4),
+        bottomLeft: Radius.circular(minValue * 4),
+        topRight: Radius.circular(minValue * 4))
+        : BorderRadius.only(
+        bottomLeft: Radius.circular(minValue * 4),
+        topRight: Radius.circular(minValue * 4)
+        ),
+        gradient: sendByMe ? greyGradient : linearGradient),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: sendByMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Text(message,
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontFamily: "Segoe UI",
+                    )),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

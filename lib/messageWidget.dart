@@ -14,6 +14,7 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double minValue = 8.0;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Directionality(
@@ -26,8 +27,19 @@ class MessageWidget extends StatelessWidget {
               const YMargin(20),
               Container(
                 //   width: screenWidth(context, percent: 0.6),
+                margin: message.user != null && message.user == 0
+                    ? EdgeInsets.only(right: 0.0, bottom: minValue * 2, left: 200.0)
+                    : EdgeInsets.only(right: 200.0, bottom: minValue * 2, left: 0.0),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15.00),
+                    borderRadius: message.user != null && message.user == 0
+                        ? BorderRadius.only(
+                        topLeft: Radius.circular(minValue * 4),
+                        bottomLeft: Radius.circular(minValue * 4),
+                        topRight: Radius.circular(minValue * 4))
+                        : BorderRadius.only(
+                        bottomLeft: Radius.circular(minValue * 4),
+                        topRight: Radius.circular(minValue * 4)
+                    ),
                     gradient: message.user != null && message.user == 0
                         ? greyGradient
                         : linearGradient,

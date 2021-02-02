@@ -25,7 +25,7 @@ class AppBar3 extends StatelessWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.of(context).pushReplacementNamed('/messages');
                     },
                     child: Icon(
                       Icons.arrow_back_ios_rounded,

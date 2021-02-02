@@ -247,7 +247,7 @@ public class MainActivity extends FlutterActivity {
     private void initialWork() {
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
+        wifiManager.setWifiEnabled(true);
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
 
@@ -308,12 +308,7 @@ public class MainActivity extends FlutterActivity {
     };
 
     private void exqListener() {
-        if (wifiManager.isWifiEnabled()) {
-            wifiManager.setWifiEnabled(false);
-
-        } else {
-            wifiManager.setWifiEnabled(true);
-        }
+        wifiManager.setWifiEnabled(true);
     }
 
     private void discover() {
