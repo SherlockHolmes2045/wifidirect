@@ -8,19 +8,22 @@ class Message {
   String name;
   bool isBold;
   String ip;
+  String type;
 
   Message({
     @required this.message,
     this.user,
     this.name,
     this.isBold = false,
-    this.ip
+    this.ip,
+    this.type
   });
 
   Message.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     name = json['name'];
     ip = json['ip'];
+    type = json['type'];
   }
 
   Map<String, dynamic> toJson() {
@@ -28,6 +31,7 @@ class Message {
     data['message'] = this.message;
     data['name'] = this.name;
     data['ip'] = this.ip;
+    data['type'] = this.type;
     return data;
   }
 }

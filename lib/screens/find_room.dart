@@ -7,6 +7,7 @@ import 'package:get_ip/get_ip.dart';
 import 'package:ping_discover_network/ping_discover_network.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
+import 'package:siuu_tchat/custom/radar_group.dart';
 import 'package:siuu_tchat/screens/roomtalk.dart';
 import 'package:siuu_tchat/utils/margin.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,8 @@ class FindRoom extends StatefulWidget {
 class _FindRoomState extends State<FindRoom> {
   bool serverFound = false;
   String ipAddress = "";
-
+  bool isSearching = false;
+  List<String> groups = List<String>();
   @override
   void initState() {
     context.read<ServerViewModel>().initState();
@@ -43,7 +45,7 @@ class _FindRoomState extends State<FindRoom> {
     }).onDone(() => print('Finish. Found $found device(s)'));
   }
 
-  Future<void> fetchServer(provider, BuildContext context) async {
+  fetchServer(provider, BuildContext context) async {
     String ipAddress = "";
     if (!Platform.isMacOS) {
       ipAddress = await GetIp.ipAddress;
@@ -97,7 +99,24 @@ class _FindRoomState extends State<FindRoom> {
   Widget build(BuildContext context) {
     var provider = context.watch<ServerViewModel>();
     return Scaffold(
-        body: FutureBuilder(
+        body: RadarGroup(
+            [],
+            CircleAvatar(
+              child: IconButton(
+                icon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  fetchServer(provider, context);
+                  setState(() {
+                    isSearching = true;
+                  });
+                },
+              ),
+            ),
+            isSearching
+        )/*FutureBuilder(
             future: fetchServer(provider, context),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -126,6 +145,7 @@ class _FindRoomState extends State<FindRoom> {
                   ),
                 );
               }
-            }));
+            })*/
+    );
   }
 }

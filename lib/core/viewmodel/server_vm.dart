@@ -94,6 +94,7 @@ class ServerViewModel extends ChangeNotifier {
                       Message(
                           message: message.message,
                           name: message.name,
+                          type: message.type,
                           user: message.ip == getTCPData().ip ? 0 : 1));
                   notifyListeners();
                 }
@@ -182,24 +183,19 @@ class ServerViewModel extends ChangeNotifier {
     await _socket.close();
   }
 
-  void sendMessage(context, TCPData tcpData, {bool isHost}) async{
-    /* _messageList.insert(
-        0, new Message(message: msg.text, user: 0, userID: null)); */
-    print(ip.text + " " + getTCPData().ip);
-    messageList.forEach((element) {
-      print(element.toJson());
-    });
+  void sendMessage(context, TCPData tcpData, {bool isHost,String messages}) async{
+
     String senderIp = "";
     if (!Platform.isMacOS) senderIp = await GetIp.ipAddress;
     print(senderIp);
     var message = utf8.encode(json.encode(
-        Message(message: msg.text, name: tcpData?.name ?? '',ip: senderIp).toJson()));
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text").toJson()));
 
     if (isHost) {
       print("host");
       _messageList.insert(
         0,
-        Message(message: msg.text, name: tcpData?.name,user: 0),
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name,user: 0,type: messages !=null ? "image" : "text"),
       );
       notifyListeners();
     }

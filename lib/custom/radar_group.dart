@@ -4,24 +4,24 @@ import 'package:siuu_tchat/database/chat_dao.dart';
 import 'package:siuu_tchat/model/chat.dart' as chatModel;
 import 'package:flutter/services.dart';
 import 'package:siuu_tchat/screens/Messages/chat_custom.dart';
-class Radar extends StatefulWidget {
+class RadarGroup extends StatefulWidget {
   List<Device> devices = new List<Device>();
   Widget buttonSearch;
   bool isSearching;
-  Radar(this.devices,this.buttonSearch,this.isSearching);
+  RadarGroup(this.devices,this.buttonSearch,this.isSearching);
   @override
-  _RadarState createState() => _RadarState();
+  _RadarGroupState createState() => _RadarGroupState();
 }
 
-class _RadarState extends State<Radar> {
+class _RadarGroupState extends State<RadarGroup> {
   String img = "assets/images/person1.png";
   static const platform = const MethodChannel('samples.flutter.dev/battery');
   List<Widget> peers = new List<Widget>();
-  int start = 5;
+  int start = 2;
 
   List<Widget> buildPeers(double size) {
     peers = [];
-    start = 5;
+    start = 2;
     setState(() {
       peers.add(
         Container(
@@ -67,42 +67,42 @@ class _RadarState extends State<Radar> {
           left: (size - 16) / 2 - 20,
           child: widget.isSearching ?
           CircularProgressIndicator() : widget.buttonSearch,
-          ),
-        );
+        ),
+      );
     });
     if (widget.devices != null)
       widget.devices.forEach((element) {
         setState(() {
           peers.add(
-            InkWell(
-              onTap: () async {
-                await platform.invokeMethod("connectToPeer",
-                    {"address": element.deviceAddres});
-                ChatDao chatDao = new ChatDao();
-                chatDao.findChat(element.deviceAddres).then((value){
-                  if(value.isEmpty){
-                    print("enregistrement de la discussion");
-                    chatDao.insert(chatModel.Chat(element.deviceAddres,element.deviceName)).then((onValue) {
-                      return;
-                    });
-                  }
-                });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          Chat(name: element.deviceName,chatId: element.deviceAddres,bleAddress: element.bleAddres,)),
-                );
-              },
-              child:  Positioned(
-                top: size / start,
-                left: size / 4,
-                child: Pic(
-                  image: img,
-                  color: Colors.orange,
+              InkWell(
+                onTap: () async {
+                  await platform.invokeMethod("connectToPeer",
+                      {"address": element.deviceAddres});
+                  ChatDao chatDao = new ChatDao();
+                  chatDao.findChat(element.deviceAddres).then((value){
+                    if(value.isEmpty){
+                      print("enregistrement de la discussion");
+                      chatDao.insert(chatModel.Chat(element.deviceAddres,element.deviceName)).then((onValue) {
+                        return;
+                      });
+                    }
+                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            Chat(name: element.deviceName,chatId: element.deviceAddres,bleAddress: element.bleAddres,)),
+                  );
+                },
+                child:  Positioned(
+                  top: size / start,
+                  left: size / 4,
+                  child: Pic(
+                    image: img,
+                    color: Colors.orange,
+                  ),
                 ),
-              ),
-            )
+              )
           );
         });
         start += 4;

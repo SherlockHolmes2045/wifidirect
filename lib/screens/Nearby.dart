@@ -15,21 +15,37 @@ class Nearby extends StatefulWidget {
 class _NearbyState extends State<Nearby> {
   static const platform = const MethodChannel('samples.flutter.dev/battery');
   List<Device> devices = new List<Device>();
-
+  bool isSearching = false;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     print("initstate");
-    activateDiscovery();
-    runPlayground();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-          child: Radar(devices)/*ListView.separated(
+          child: Radar(
+              devices,
+              CircleAvatar(
+                child: IconButton(
+                  icon: Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    activateDiscovery();
+                    runPlayground();
+                    setState(() {
+                      isSearching = true;
+                    });
+                  },
+                ),
+              ),
+              isSearching)
+          /*ListView.separated(
               separatorBuilder: (BuildContext context, int index) {
                 return Divider();
               },
@@ -58,7 +74,7 @@ class _NearbyState extends State<Nearby> {
                   },
                 );
               })*/
-              ),
+          ),
     );
   }
 
@@ -77,7 +93,11 @@ class _NearbyState extends State<Nearby> {
         setState(() {
           print(result.entries);
           devices = result.entries
-              .map((element) => Device(element.key['name'], element.value["address"].split(" ")[0],element.value["address"].split(" ")[1])).toList();
+              .map((element) => Device(
+                  element.key['name'],
+                  element.value["address"].split(" ")[0],
+                  element.value["address"].split(" ")[1]))
+              .toList();
         });
       }
     });

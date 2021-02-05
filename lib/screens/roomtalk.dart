@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:siuu_tchat/ImageWidget.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
@@ -51,7 +56,10 @@ class _RoomTalkState extends State<RoomTalk> {
                 reverse: true,
                 children: <Widget>[
                   for (var messageItem in serverProvider.messageList)
-                    MessageWidget(message: messageItem),
+                    messageItem.type =="text"
+                        ?
+                    MessageWidget(message: messageItem)
+                  : ImageWidget(message: messageItem),
                 ],
               ),
             ),
@@ -87,6 +95,35 @@ class _RoomTalkState extends State<RoomTalk> {
                   ),
                   Spacer(),
                   GestureDetector(
+                    onTap: () async{
+
+                      File result = await FilePicker.getFile(type: FileType.image,);
+                      final image = File(result.path).readAsBytesSync();
+                      String imageStr = base64.encode(image);
+                      serverProvider.sendMessage(
+                        context,
+                        widget?.tcpData,
+                        isHost: widget.isHost,
+                        messages: imageStr
+                      );
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [
+                                const Color(0x36FFFFFF),
+                                const Color(0x0FFFFFFF)
+                              ],
+                              begin: FractionalOffset.topLeft,
+                              end: FractionalOffset.bottomRight),
+                          borderRadius: BorderRadius.circular(40)),
+                      padding: EdgeInsets.all(12),
+                      child:  SvgPicture.asset('assets/svg/File.svg'),
+                      ),
+                    ),
+                  GestureDetector(
                     onTap: (){
                       if (serverProvider.msg.text != null &&
                           serverProvider.msg.text.isNotEmpty &&
@@ -111,8 +148,8 @@ class _RoomTalkState extends State<RoomTalk> {
                           borderRadius: BorderRadius.circular(40)),
                       padding: EdgeInsets.all(12),
                       child:  SvgPicture.asset('assets/svg/icon - send.svg'),
-                      ),
                     ),
+                  ),
                 ],
               ),
             ),
