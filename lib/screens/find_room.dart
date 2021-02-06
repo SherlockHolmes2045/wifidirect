@@ -25,24 +25,17 @@ class _FindRoomState extends State<FindRoom> {
   @override
   void initState() {
     context.read<ServerViewModel>().initState();
+    getIpAdress();
     super.initState();
   }
 
-  getIp(String ipAddr) async {
-    const port = 4000;
-    final stream = NetworkAnalyzer.discover2(
-      '192.168.100',
-      port,
-      timeout: Duration(milliseconds: 400),
-    );
+  getIpAdress() async{
+    if (!Platform.isMacOS) {
+      setState(() async{
 
-    int found = 0;
-    stream.listen((NetworkAddress addr) {
-      if (addr.exists) {
-        found++;
-        print('Found device: ${addr.ip}:$port');
-      }
-    }).onDone(() => print('Finish. Found $found device(s)'));
+        ipAddress = await GetIp.ipAddress;
+      });
+    }
   }
 
   fetchServer(provider, BuildContext context) async {
@@ -69,28 +62,27 @@ class _FindRoomState extends State<FindRoom> {
           provider.port.text = "4000";
           provider.name.text = "test";
           print("success");
+          setState(() {
+            groups.add(ipTest);
+          });
           serverFound = true;
         }).timeout(Duration(milliseconds: 80), onTimeout: () {
           //print("timeout");
           return;
-          throw "TimeOut";
         }).catchError((onError) {
           //print(onError);
           return;
-          throw "Error";
         });
       }
-      //print("i = " + i.toString());
-      if (serverFound) break;
+      /*if (serverFound) break;
       if(!serverFound && i == 255) {
         provider.ip.text = ipAddress;
         provider.port.text = "4000";
         provider.name.text = "test";
         break;
-      }
+      }*/
 
     }
-    //if(serverFound) socket.close();
     print("recherche termninée");
     return serverFound ? provider.ip.text : ipAddress;
   }
@@ -112,10 +104,18 @@ class _FindRoomState extends State<FindRoom> {
                   setState(() {
                     isSearching = true;
                   });
+                  if(groups.isEmpty){
+                    provider.ip.text = ipAddress;
+                    provider.port.text = "4000";
+                    provider.name.text = "test";
+                    provider.startServer(context,ipAddress,"4000","test");
+                  }
                 },
               ),
             ),
-            isSearching
+            isSearching,
+          provider,
+          ipAddress
         )/*FutureBuilder(
             future: fetchServer(provider, context),
             builder: (context, snapshot) {

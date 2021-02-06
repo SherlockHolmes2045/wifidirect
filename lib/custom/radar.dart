@@ -74,35 +74,35 @@ class _RadarState extends State<Radar> {
       widget.devices.forEach((element) {
         setState(() {
           peers.add(
-            InkWell(
-              onTap: () async {
-                await platform.invokeMethod("connectToPeer",
-                    {"address": element.deviceAddres});
-                ChatDao chatDao = new ChatDao();
-                chatDao.findChat(element.deviceAddres).then((value){
-                  if(value.isEmpty){
-                    print("enregistrement de la discussion");
-                    chatDao.insert(chatModel.Chat(element.deviceAddres,element.deviceName)).then((onValue) {
-                      return;
-                    });
-                  }
-                });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          Chat(name: element.deviceName,chatId: element.deviceAddres,bleAddress: element.bleAddres,)),
-                );
-              },
-              child:  Positioned(
+            Positioned(
                 top: size / start,
                 left: size / 4,
-                child: Pic(
-                  image: img,
-                  color: Colors.orange,
+                child: InkWell(
+                    onTap: () async {
+                      await platform.invokeMethod("connectToPeer",
+                          {"address": element.deviceAddres});
+                      ChatDao chatDao = new ChatDao();
+                      chatDao.findChat(element.deviceAddres).then((value){
+                        if(value.isEmpty){
+                          print("enregistrement de la discussion");
+                          chatDao.insert(chatModel.Chat(element.deviceAddres,element.deviceName)).then((onValue) {
+                            return;
+                          });
+                        }
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                Chat(name: element.deviceName,chatId: element.deviceAddres,bleAddress: element.bleAddres,)),
+                      );
+                    },
+                  child: Pic(
+                    image: img,
+                    color: Colors.orange,
+                  ),
                 ),
               ),
-            )
           );
         });
         start += 4;

@@ -4,11 +4,14 @@ import 'package:siuu_tchat/database/chat_dao.dart';
 import 'package:siuu_tchat/model/chat.dart' as chatModel;
 import 'package:flutter/services.dart';
 import 'package:siuu_tchat/screens/Messages/chat_custom.dart';
+
 class RadarGroup extends StatefulWidget {
-  List<Device> devices = new List<Device>();
+  List<String> groups = new List<String>();
   Widget buttonSearch;
   bool isSearching;
-  RadarGroup(this.devices,this.buttonSearch,this.isSearching);
+  var provider;
+  String userIp;
+  RadarGroup(this.groups,this.buttonSearch,this.isSearching,this.provider,this.userIp);
   @override
   _RadarGroupState createState() => _RadarGroupState();
 }
@@ -70,39 +73,26 @@ class _RadarGroupState extends State<RadarGroup> {
         ),
       );
     });
-    if (widget.devices != null)
-      widget.devices.forEach((element) {
+    if (widget.groups != null)
+      widget.groups.forEach((element) {
         setState(() {
           peers.add(
-              InkWell(
-                onTap: () async {
-                  await platform.invokeMethod("connectToPeer",
-                      {"address": element.deviceAddres});
-                  ChatDao chatDao = new ChatDao();
-                  chatDao.findChat(element.deviceAddres).then((value){
-                    if(value.isEmpty){
-                      print("enregistrement de la discussion");
-                      chatDao.insert(chatModel.Chat(element.deviceAddres,element.deviceName)).then((onValue) {
-                        return;
-                      });
-                    }
-                  });
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            Chat(name: element.deviceName,chatId: element.deviceAddres,bleAddress: element.bleAddres,)),
-                  );
-                },
-                child:  Positioned(
+               Positioned(
                   top: size / start,
                   left: size / 4,
-                  child: Pic(
-                    image: img,
-                    color: Colors.orange,
+                  child: InkWell(
+                    onTap: (){
+                      widget.provider.ip.text = element;
+                      widget.provider.port.text = "4000";
+                      widget.provider.name.text = "test";
+                      widget.provider.connectToServer(context, isHost: false);
+                    },
+                    child: Pic(
+                      image: img,
+                      color: Colors.orange,
+                    ),
                   ),
-                ),
-              )
+               ),
           );
         });
         start += 4;
