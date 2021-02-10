@@ -38,12 +38,11 @@ class _FindRoomState extends State<FindRoom> {
     }
   }
 
-  fetchServer(provider, BuildContext context) async {
+  Future<dynamic> fetchServer(provider, BuildContext context) async {
     String ipAddress = "";
     if (!Platform.isMacOS) {
       ipAddress = await GetIp.ipAddress;
     }
-    //getIp(ipAddress);
     List<String> ipBreak = ipAddress.split(".");
     String network = ipAddress.substring(0, ipAddress.lastIndexOf("."));
     String networkPart = ipBreak[ipBreak.length - 1];
@@ -74,14 +73,13 @@ class _FindRoomState extends State<FindRoom> {
           return;
         });
       }
-      /*if (serverFound) break;
+      if (serverFound) break;
       if(!serverFound && i == 255) {
         provider.ip.text = ipAddress;
         provider.port.text = "4000";
         provider.name.text = "test";
         break;
-      }*/
-
+      }
     }
     print("recherche termninée");
     return serverFound ? provider.ip.text : ipAddress;
@@ -91,7 +89,7 @@ class _FindRoomState extends State<FindRoom> {
   Widget build(BuildContext context) {
     var provider = context.watch<ServerViewModel>();
     return Scaffold(
-        body: RadarGroup(
+        body: /*RadarGroup(
             [],
             CircleAvatar(
               child: IconButton(
@@ -116,7 +114,7 @@ class _FindRoomState extends State<FindRoom> {
             isSearching,
           provider,
           ipAddress
-        )/*FutureBuilder(
+        )*/FutureBuilder(
             future: fetchServer(provider, context),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -145,7 +143,7 @@ class _FindRoomState extends State<FindRoom> {
                   ),
                 );
               }
-            })*/
+            })
     );
   }
 }

@@ -335,35 +335,66 @@ class _ChatState extends State<Chat> {
                       ),
                       borderRadius: BorderRadius.circular(26.00),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                              style: TextStyle(
-                                fontFamily: "Segoe UI",
-                                fontSize: 15,
-                                color: Color(0xff4d0cbb),
-                              ),
-                              controller: messageEditingController,
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.only(left: 20),
-                                border: InputBorder.none,
-                                hintText: "Say something…",
-                                hintStyle: TextStyle(
+                    child: Container(
+                      color: Colors.white,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                                style: TextStyle(
                                   fontFamily: "Segoe UI",
                                   fontSize: 15,
                                   color: Color(0xff4d0cbb),
                                 ),
-                              )),
-                        ),
-                        SizedBox(
-                          width: 16,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            addMessage(Status.TEXT);
-                          },
-                          child: Container(
+                                controller: messageEditingController,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.only(left: 20),
+                                  border: InputBorder.none,
+                                  hintText: "Hey…",
+                                  hintStyle: TextStyle(
+                                    fontFamily: "Segoe UI",
+                                    fontSize: 15,
+                                    color: Color(0xff4d0cbb),
+                                  ),
+                                )),
+                          ),
+                          SizedBox(
+                            width: 16,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              addMessage(Status.TEXT);
+                            },
+                            child: Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0x36FFFFFF),
+                                          const Color(0x0FFFFFFF)
+                                        ],
+                                        begin: FractionalOffset.topLeft,
+                                        end: FractionalOffset.bottomRight),
+                                    borderRadius: BorderRadius.circular(40)),
+                                padding: EdgeInsets.all(12),
+                                child:
+                                    SvgPicture.asset('assets/svg/icon - send.svg')),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+
+                              Io.File result =
+                                  await FilePicker.getFile(type: FileType.image,);
+                              print("path " + result.path);
+                              double sizeInMb = result.lengthSync() / (1024 * 1024);
+                              if(sizeInMb <= 1){
+                                Io.File compressedFile = await FlutterNativeImage.compressImage(result.path,
+                                    quality: 5);
+                                addMessage(Status.IMAGE, path: compressedFile.path);
+                              }
+                            },
+                            child: Container(
                               height: 40,
                               width: 40,
                               decoration: BoxDecoration(
@@ -376,61 +407,33 @@ class _ChatState extends State<Chat> {
                                       end: FractionalOffset.bottomRight),
                                   borderRadius: BorderRadius.circular(40)),
                               padding: EdgeInsets.all(12),
-                              child:
-                                  SvgPicture.asset('assets/svg/icon - send.svg')),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-
-                            Io.File result =
-                                await FilePicker.getFile(type: FileType.image,);
-                            print("path " + result.path);
-                            double sizeInMb = result.lengthSync() / (1024 * 1024);
-                            if(sizeInMb <= 1){
-                              Io.File compressedFile = await FlutterNativeImage.compressImage(result.path,
-                                  quality: 5);
-                              addMessage(Status.IMAGE, path: compressedFile.path);
-                            }
-                          },
-                          child: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0x36FFFFFF),
-                                      const Color(0x0FFFFFFF)
-                                    ],
-                                    begin: FractionalOffset.topLeft,
-                                    end: FractionalOffset.bottomRight),
-                                borderRadius: BorderRadius.circular(40)),
-                            padding: EdgeInsets.all(12),
-                            child: SvgPicture.asset('assets/svg/File.svg'),
+                              child: SvgPicture.asset('assets/svg/Camera2.svg'),
+                            ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: ()  {
-                            setState(() {
-                              recordMode = true;
-                            });
-                          },
-                          child: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0x36FFFFFF),
-                                      const Color(0x0FFFFFFF)
-                                    ],
-                                    begin: FractionalOffset.topLeft,
-                                    end: FractionalOffset.bottomRight),
-                                borderRadius: BorderRadius.circular(40)),
-                            padding: EdgeInsets.all(12),
-                            child: SvgPicture.asset('assets/svg/Voice.svg'),
+                          GestureDetector(
+                            onTap: ()  {
+                              setState(() {
+                                recordMode = true;
+                              });
+                            },
+                            child: Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0x36FFFFFF),
+                                        const Color(0x0FFFFFFF)
+                                      ],
+                                      begin: FractionalOffset.topLeft,
+                                      end: FractionalOffset.bottomRight),
+                                  borderRadius: BorderRadius.circular(40)),
+                              padding: EdgeInsets.all(12),
+                              child: SvgPicture.asset('assets/svg/Voice.svg'),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

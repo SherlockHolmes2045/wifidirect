@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:siuu_tchat/model/Device.dart';
 import 'package:siuu_tchat/database/chat_dao.dart';
 import 'package:siuu_tchat/model/chat.dart' as chatModel;
 import 'package:flutter/services.dart';
+import 'package:siuu_tchat/res/colors.dart';
 import 'package:siuu_tchat/screens/Messages/chat_custom.dart';
 class Radar extends StatefulWidget {
   List<Device> devices = new List<Device>();
@@ -66,7 +68,16 @@ class _RadarState extends State<Radar> {
           top: size / 2 - 20,
           left: (size - 16) / 2 - 20,
           child: widget.isSearching ?
-          CircularProgressIndicator() : widget.buttonSearch,
+          SpinKitCircle(
+            itemBuilder: (BuildContext context, int index) {
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                    gradient: linearGradient,
+                  shape: BoxShape.circle
+                ),
+              );
+            },
+          ) : widget.buttonSearch,
           ),
         );
     });
@@ -100,6 +111,7 @@ class _RadarState extends State<Radar> {
                   child: Pic(
                     image: img,
                     color: Colors.orange,
+                    gradient: linearGradient,
                   ),
                 ),
               ),
@@ -133,8 +145,8 @@ class _RadarState extends State<Radar> {
 class Pic extends StatelessWidget {
   final String image;
   final Color color;
-
-  Pic({this.image, this.color});
+  Gradient gradient;
+  Pic({this.image, this.color,this.gradient});
 
   @override
   Widget build(BuildContext context) {
@@ -142,9 +154,10 @@ class Pic extends StatelessWidget {
       height: 40,
       width: 40,
       decoration: BoxDecoration(
+        //gradient: gradient,
         shape: BoxShape.circle,
         border: Border.all(
-          color: color,
+          color: Color(0xff4D0CBB),
           width: 2,
         ),
       ),
