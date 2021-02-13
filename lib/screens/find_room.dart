@@ -89,7 +89,7 @@ class _FindRoomState extends State<FindRoom> {
   Widget build(BuildContext context) {
     var provider = context.watch<ServerViewModel>();
     return Scaffold(
-        body: /*RadarGroup(
+        body: RadarGroup(
             [],
             CircleAvatar(
               child: IconButton(
@@ -98,8 +98,22 @@ class _FindRoomState extends State<FindRoom> {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  fetchServer(provider, context);
                   setState(() {
+                    isSearching = true;
+                  });
+                  fetchServer(provider, context).then((value){
+                    if (!serverFound) {
+                      print("creating server...");
+                      provider.ip.text = value;
+                      provider.port.text = "4000";
+                      provider.name.text = "test";
+                      provider.startServer(context,value,"4000","test");
+                    } else {
+                      provider.connectToServer(context, isHost: false);
+                    }
+                  });
+                }
+                  /*setState(() {
                     isSearching = true;
                   });
                   if(groups.isEmpty){
@@ -107,14 +121,14 @@ class _FindRoomState extends State<FindRoom> {
                     provider.port.text = "4000";
                     provider.name.text = "test";
                     provider.startServer(context,ipAddress,"4000","test");
-                  }
-                },
+                  }*/
+
               ),
             ),
             isSearching,
           provider,
           ipAddress
-        )*/FutureBuilder(
+        )/*FutureBuilder(
             future: fetchServer(provider, context),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -143,7 +157,7 @@ class _FindRoomState extends State<FindRoom> {
                   ),
                 );
               }
-            })
+            })*/
     );
   }
 }

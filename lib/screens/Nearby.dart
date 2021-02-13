@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:siuu_tchat/database/chat_dao.dart';
@@ -28,7 +30,7 @@ class _NearbyState extends State<Nearby> {
     return Scaffold(
       body: Container(
           child: Radar(
-              devices,
+              !isSearching ? [] : devices,
               CircleAvatar(
                 child: IconButton(
                   icon: Icon(
@@ -36,10 +38,20 @@ class _NearbyState extends State<Nearby> {
                     color: Colors.white,
                   ),
                   onPressed: () {
-                    activateDiscovery();
-                    runPlayground();
                     setState(() {
                       isSearching = true;
+                      running = false;
+                    });
+                    activateDiscovery();
+                    runPlayground();
+                    Timer(Duration(seconds: 15),(){
+                      if(devices.isEmpty){
+                        setState(() {
+                          running = true;
+                          runPlayground();
+                          isSearching = false;
+                        });
+                      }
                     });
                   },
                 ),

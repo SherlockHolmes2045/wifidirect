@@ -27,6 +27,11 @@ class _RoomTalkState extends State<RoomTalk> {
   ServerViewModel serverProvider;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  @override
   void dispose() {
     if (widget.isHost) serverProvider.server.close();
     serverProvider.closeSocket();
@@ -82,7 +87,7 @@ class _RoomTalkState extends State<RoomTalk> {
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.only(left: 20),
                           border: InputBorder.none,
-                          hintText: "Say something…",
+                          hintText: "Hey...",
                           hintStyle: TextStyle(
                             fontFamily: "Segoe UI",
                             fontSize: 15,

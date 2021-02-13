@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get_ip/get_ip.dart';
 import 'package:siuu_tchat/core/model/message.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
+import 'package:siuu_tchat/database/roomtalk_dao.dart';
 import 'package:siuu_tchat/screens/roomtalk.dart';
 
 class ServerViewModel extends ChangeNotifier {
@@ -51,6 +52,10 @@ class ServerViewModel extends ChangeNotifier {
 
     port.text = "4000";
     errorMessage = '';
+    RoomTalkDao roomTalkDao = new RoomTalkDao();
+    roomTalkDao.getAll().then((value) {
+      _messageList = value;
+    });
   }
 
   getTCPData() {
@@ -58,7 +63,7 @@ class ServerViewModel extends ChangeNotifier {
   }
 
   void startServer(context,String ipAdress,String portNumber,String userName) async {
-
+    RoomTalkDao roomTalkDao = new RoomTalkDao();
     /*if (ip.text == null || ip.text.isEmpty) {
       errorMessage = "IP Address cant be empty!";
       print("here");
@@ -95,7 +100,18 @@ class ServerViewModel extends ChangeNotifier {
                           message: message.message,
                           name: message.name,
                           type: message.type,
-                          user: message.ip == getTCPData().ip ? 0 : 1));
+                          user: message.ip == getTCPData().ip ? 0 : 1,
+                          time: message.time,
+                          ip: message.ip
+                      ));
+                  roomTalkDao.insert(Message(
+                      message: message.message,
+                      name: message.name,
+                      type: message.type,
+                      user: message.ip == getTCPData().ip ? 0 : 1,
+                      time: message.time,
+                      ip: message.ip
+                  ));
                   notifyListeners();
                 }
                 _.add(data);
@@ -122,6 +138,7 @@ class ServerViewModel extends ChangeNotifier {
   }
 
   connectToServer(context, {bool isHost = true}) async {
+    RoomTalkDao roomTalkDao = new RoomTalkDao();
     if (ip.text == null || ip.text.isEmpty) {
       errorMessage = "IP Address cant be empty!";
       notifyListeners();
@@ -154,8 +171,20 @@ class ServerViewModel extends ChangeNotifier {
                   Message(
                       message: message.message,
                       name: message.name,
-                      user: ipAddress == message.ip ? 0 : 1));
+                      user: ipAddress == message.ip ? 0 : 1,
+                      type: message.type,
+                      time: message.time,
+                      ip: message.ip
+                  ));
               notifyListeners();
+              roomTalkDao.insert(Message(
+                message: message.message,
+                name: message.name,
+                user: ipAddress == message.ip ? 0 : 1,
+                type: message.type,
+                time: message.time,
+                ip: message.ip
+              ));
             }
           } catch (e) {
             print(e.toString());
@@ -184,25 +213,25 @@ class ServerViewModel extends ChangeNotifier {
   }
 
   void sendMessage(context, TCPData tcpData, {bool isHost,String messages}) async{
-
+    RoomTalkDao roomTalkDao = new RoomTalkDao();
     String senderIp = "";
     if (!Platform.isMacOS) senderIp = await GetIp.ipAddress;
     print(senderIp);
     var message = utf8.encode(json.encode(
-        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text").toJson()));
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch).toJson()));
 
     if (isHost) {
       print("host");
       _messageList.insert(
         0,
-        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name,user: 0,type: messages !=null ? "image" : "text"),
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name,user: 0,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch),
       );
       notifyListeners();
     }
 
     try {
       _socket.add(message);
-
+      roomTalkDao.insert(Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch));
       msg.clear();
     } catch (e) {
       //showErrorDialog(context, error: e.toString());
