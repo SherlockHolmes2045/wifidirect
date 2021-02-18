@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:file/local.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:siuu_tchat/ImageWidget.dart';
@@ -25,6 +27,64 @@ class RoomTalk extends StatefulWidget {
 
 class _RoomTalkState extends State<RoomTalk> {
   ServerViewModel serverProvider;
+  String audioText = "Maintenez pour enregister";
+  bool recordMode = false;
+  LocalFileSystem localFileSystem = LocalFileSystem();
+  FlutterAudioRecorder _recorder;
+  Recording _current;
+  RecordingStatus _currentStatus = RecordingStatus.Unset;
+
+  _start() async {
+    try {
+      await _recorder.start();
+      var recording = await _recorder.current(channel: 0);
+      setState(() {
+        _current = recording;
+        audioText = "Enregistre...";
+      });
+
+      const tick = const Duration(milliseconds: 50);
+      new Timer.periodic(tick, (Timer t) async {
+        if (_currentStatus == RecordingStatus.Stopped) {
+          t.cancel();
+        }
+
+        var current = await _recorder.current(channel: 0);
+        // print(current.status);
+        setState(() {
+          _current = current;
+          _currentStatus = _current.status;
+        });
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  _resume() async {
+    await _recorder.resume();
+    setState(() {});
+  }
+
+  _pause() async {
+    await _recorder.pause();
+    setState(() {});
+  }
+
+  _stop() async {
+    var result = await _recorder.stop();
+    print("Stop recording: ${result.path}");
+    print("Stop recording: ${result.duration}");
+    File file = localFileSystem.file(result.path);
+    //addMessage(Status.AUDIO,path: result.path);
+    print("File length: ${await file.length()}");
+    setState(() {
+      _current = result;
+      _currentStatus = _current.status;
+      audioText = "Maintenez pour enregister";
+      recordMode = false;
+    });
+  }
 
   @override
   void initState() {
@@ -125,9 +185,36 @@ class _RoomTalkState extends State<RoomTalk> {
                               end: FractionalOffset.bottomRight),
                           borderRadius: BorderRadius.circular(40)),
                       padding: EdgeInsets.all(12),
-                      child:  SvgPicture.asset('assets/svg/File.svg'),
+                      child:  SvgPicture.asset('assets/svg/Camera2.svg'),
                       ),
                     ),
+                  GestureDetector(
+                    onTap: (){
+                      if (serverProvider.msg.text != null &&
+                          serverProvider.msg.text.isNotEmpty &&
+                          widget.tcpData != null)
+                        serverProvider.sendMessage(
+                          context,
+                          widget?.tcpData,
+                          isHost: widget.isHost,
+                        );
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [
+                                const Color(0x36FFFFFF),
+                                const Color(0x0FFFFFFF)
+                              ],
+                              begin: FractionalOffset.topLeft,
+                              end: FractionalOffset.bottomRight),
+                          borderRadius: BorderRadius.circular(40)),
+                      padding: EdgeInsets.all(12),
+                      child:  SvgPicture.asset('assets/svg/Voice.svg'),
+                    ),
+                  ),
                   GestureDetector(
                     onTap: (){
                       if (serverProvider.msg.text != null &&
@@ -158,7 +245,43 @@ class _RoomTalkState extends State<RoomTalk> {
                 ],
               ),
             ),
-            const YMargin(30)
+            const YMargin(30),
+            recordMode ? GestureDetector(
+              onLongPress: (){
+                _start();
+              },
+              onLongPressEnd: (longPressEndDetails){
+                _stop();
+              },
+              child: Column(
+                children: [
+                  Padding(
+                    padding:  EdgeInsets.only(top: MediaQuery.of(context).size.height/20),
+                    child: Text(
+                      audioText,
+                      style: TextStyle(
+                          fontSize: 20.0
+                      ),
+                    ),
+                  ),
+                  Container(
+                      alignment: Alignment.bottomCenter,
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height / 7,
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: CircleAvatar(
+                          radius: 35.0,
+                          child: Icon(
+                            Icons.mic,
+                            size: 30.0,
+                          ),
+                        ),
+                      )
+                  ),
+                ],
+              ),
+            ) : Container()
           ],
         ),
       ),

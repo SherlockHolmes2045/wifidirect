@@ -1,12 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:siuu_tchat/database/chat_dao.dart';
 import 'package:siuu_tchat/model/Device.dart';
 import '../events.dart';
-import 'Messages/chat_custom.dart';
-import 'package:siuu_tchat/model/chat.dart' as chatModel;
 import 'package:siuu_tchat/custom/radar.dart';
 
 class Nearby extends StatefulWidget {
@@ -17,6 +13,7 @@ class Nearby extends StatefulWidget {
 class _NearbyState extends State<Nearby> {
   static const platform = const MethodChannel('samples.flutter.dev/battery');
   List<Device> devices = new List<Device>();
+  List<Device> result = new List<Device>();
   bool isSearching = false;
   @override
   void initState() {
@@ -30,7 +27,7 @@ class _NearbyState extends State<Nearby> {
     return Scaffold(
       body: Container(
           child: Radar(
-              !isSearching ? [] : devices,
+              !isSearching ? result : devices,
               CircleAvatar(
                 child: IconButton(
                   icon: Icon(
@@ -50,6 +47,7 @@ class _NearbyState extends State<Nearby> {
                           running = true;
                           runPlayground();
                           isSearching = false;
+                          result = devices;
                         });
                       }
                     });

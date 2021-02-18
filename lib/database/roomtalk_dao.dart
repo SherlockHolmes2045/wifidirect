@@ -1,7 +1,6 @@
 import 'package:sembast/sembast.dart';
 import 'package:siuu_tchat/core/model/message.dart';
 import 'package:siuu_tchat/database/app_database.dart';
-import 'package:siuu_tchat/model/discussion.dart';
 
 class RoomTalkDao{
   static const String DISCUSSION_STORE_NAME = 'roomtalk';
