@@ -67,7 +67,7 @@ class _FindRoomState extends State<FindRoom> {
           return;
         });
       }
-      if (serverFound) break;
+      //if (serverFound) break;
       if(!serverFound && i == 255) {
         provider.ip.text = ipAddress;
         provider.port.text = "4000";
@@ -84,7 +84,7 @@ class _FindRoomState extends State<FindRoom> {
     var provider = context.watch<ServerViewModel>();
     return Scaffold(
         body: RadarGroup(
-            [],
+            groups,
             CircleAvatar(
               child: IconButton(
                 icon: Icon(
@@ -103,7 +103,10 @@ class _FindRoomState extends State<FindRoom> {
                       provider.name.text = "test";
                       provider.startServer(context,value,"4000","test");
                     } else {
-                      provider.connectToServer(context, isHost: false);
+                      //provider.connectToServer(context, isHost: false);
+                      setState(() {
+                        isSearching = false;
+                      });
                     }
                   });
                 }
@@ -121,7 +124,8 @@ class _FindRoomState extends State<FindRoom> {
             ),
             isSearching,
           provider,
-          ipAddress
+          ipAddress,
+          serverFound
         )/*FutureBuilder(
             future: fetchServer(provider, context),
             builder: (context, snapshot) {

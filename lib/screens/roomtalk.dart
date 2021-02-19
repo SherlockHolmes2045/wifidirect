@@ -6,13 +6,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:siuu_tchat/ImageWidget.dart';
 import 'package:siuu_tchat/core/model/tcpData.dart';
 import 'package:siuu_tchat/core/viewmodel/server_vm.dart';
 import 'package:siuu_tchat/custom/customAppBars/appBar3.dart';
 import 'package:siuu_tchat/utils/margin.dart';
-
 import '../messageWidget.dart';
 
 class RoomTalk extends StatefulWidget {
@@ -76,7 +76,15 @@ class _RoomTalkState extends State<RoomTalk> {
     print("Stop recording: ${result.path}");
     print("Stop recording: ${result.duration}");
     File file = localFileSystem.file(result.path);
-    //addMessage(Status.AUDIO,path: result.path);
+    final audio = File(result.path).readAsBytesSync();
+    String audioStr = base64.encode(audio);
+    serverProvider.sendMessage(
+      context,
+      widget?.tcpData,
+      "audio",
+      isHost: widget.isHost,
+      messages: audioStr,
+    );
     print("File length: ${await file.length()}");
     setState(() {
       _current = result;
@@ -86,11 +94,55 @@ class _RoomTalkState extends State<RoomTalk> {
     });
   }
 
+  _init() async {
+    try {
+      if (await FlutterAudioRecorder.hasPermissions) {
+        String customPath = '/flutter_audio_recorder_';
+        Directory appDocDirectory;
+//        io.Directory appDocDirectory = await getApplicationDocumentsDirectory();
+        if (Platform.isIOS) {
+          appDocDirectory = await getApplicationDocumentsDirectory();
+        } else {
+          appDocDirectory = await getExternalStorageDirectory();
+        }
+
+        // can add extension like ".mp4" ".wav" ".m4a" ".aac"
+        customPath = appDocDirectory.path +
+            customPath +
+            DateTime.now().millisecondsSinceEpoch.toString();
+
+        // .wav <---> AudioFormat.WAV
+        // .mp4 .m4a .aac <---> AudioFormat.AAC
+        // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
+        _recorder =
+            FlutterAudioRecorder(customPath, audioFormat: AudioFormat.WAV);
+
+        await _recorder.initialized;
+        // after initialization
+        var current = await _recorder.current(channel: 0);
+        print(current);
+        // should be "Initialized", if all working fine
+        setState(() {
+          _current = current;
+          _currentStatus = current.status;
+          print(_currentStatus);
+        });
+      } else {
+        Scaffold.of(context).showSnackBar(
+            new SnackBar(content: new Text("You must accept permissions")));
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _init();
   }
+
   @override
   void dispose() {
     if (widget.isHost) serverProvider.server.close();
@@ -121,10 +173,9 @@ class _RoomTalkState extends State<RoomTalk> {
                 reverse: true,
                 children: <Widget>[
                   for (var messageItem in serverProvider.messageList)
-                    messageItem.type =="text"
-                        ?
-                    MessageWidget(message: messageItem)
-                  : ImageWidget(message: messageItem),
+                    messageItem.type == "text"
+                        ? MessageWidget(message: messageItem)
+                        : ImageWidget(message: messageItem),
                 ],
               ),
             ),
@@ -154,23 +205,21 @@ class _RoomTalkState extends State<RoomTalk> {
                             color: Color(0xff4d0cbb),
                           ),
                         ),
-                        style: TextStyle(color: Color(0xff4d0cbb), fontSize: 15.0),
+                        style:
+                            TextStyle(color: Color(0xff4d0cbb), fontSize: 15.0),
                         controller: serverProvider.msg,
                         autofocus: false),
                   ),
                   Spacer(),
                   GestureDetector(
-                    onTap: () async{
-
-                      File result = await FilePicker.getFile(type: FileType.image,);
+                    onTap: () async {
+                      File result = await FilePicker.getFile(
+                        type: FileType.image,
+                      );
                       final image = File(result.path).readAsBytesSync();
                       String imageStr = base64.encode(image);
-                      serverProvider.sendMessage(
-                        context,
-                        widget?.tcpData,
-                        isHost: widget.isHost,
-                        messages: imageStr
-                      );
+                      serverProvider.sendMessage(context, widget?.tcpData,"image",
+                          isHost: widget.isHost, messages: imageStr);
                     },
                     child: Container(
                       height: 40,
@@ -185,44 +234,40 @@ class _RoomTalkState extends State<RoomTalk> {
                               end: FractionalOffset.bottomRight),
                           borderRadius: BorderRadius.circular(40)),
                       padding: EdgeInsets.all(12),
-                      child:  SvgPicture.asset('assets/svg/Camera2.svg'),
-                      ),
-                    ),
-                  GestureDetector(
-                    onTap: (){
-                      if (serverProvider.msg.text != null &&
-                          serverProvider.msg.text.isNotEmpty &&
-                          widget.tcpData != null)
-                        serverProvider.sendMessage(
-                          context,
-                          widget?.tcpData,
-                          isHost: widget.isHost,
-                        );
-                    },
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [
-                                const Color(0x36FFFFFF),
-                                const Color(0x0FFFFFFF)
-                              ],
-                              begin: FractionalOffset.topLeft,
-                              end: FractionalOffset.bottomRight),
-                          borderRadius: BorderRadius.circular(40)),
-                      padding: EdgeInsets.all(12),
-                      child:  SvgPicture.asset('assets/svg/Voice.svg'),
+                      child: SvgPicture.asset('assets/svg/Camera2.svg'),
                     ),
                   ),
                   GestureDetector(
-                    onTap: (){
+                    onTap: () {
+                      setState(() {
+                        recordMode = true;
+                      });
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [
+                                const Color(0x36FFFFFF),
+                                const Color(0x0FFFFFFF)
+                              ],
+                              begin: FractionalOffset.topLeft,
+                              end: FractionalOffset.bottomRight),
+                          borderRadius: BorderRadius.circular(40)),
+                      padding: EdgeInsets.all(12),
+                      child: SvgPicture.asset('assets/svg/Voice.svg'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
                       if (serverProvider.msg.text != null &&
                           serverProvider.msg.text.isNotEmpty &&
                           widget.tcpData != null)
                         serverProvider.sendMessage(
                           context,
                           widget?.tcpData,
+                          "text",
                           isHost: widget.isHost,
                         );
                     },
@@ -239,49 +284,49 @@ class _RoomTalkState extends State<RoomTalk> {
                               end: FractionalOffset.bottomRight),
                           borderRadius: BorderRadius.circular(40)),
                       padding: EdgeInsets.all(12),
-                      child:  SvgPicture.asset('assets/svg/icon - send.svg'),
+                      child: SvgPicture.asset('assets/svg/icon - send.svg'),
                     ),
                   ),
                 ],
               ),
             ),
             const YMargin(30),
-            recordMode ? GestureDetector(
-              onLongPress: (){
-                _start();
-              },
-              onLongPressEnd: (longPressEndDetails){
-                _stop();
-              },
-              child: Column(
-                children: [
-                  Padding(
-                    padding:  EdgeInsets.only(top: MediaQuery.of(context).size.height/20),
-                    child: Text(
-                      audioText,
-                      style: TextStyle(
-                          fontSize: 20.0
-                      ),
-                    ),
-                  ),
-                  Container(
-                      alignment: Alignment.bottomCenter,
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height / 7,
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: CircleAvatar(
-                          radius: 35.0,
-                          child: Icon(
-                            Icons.mic,
-                            size: 30.0,
+            recordMode
+                ? GestureDetector(
+                    onLongPress: () {
+                      _start();
+                    },
+                    onLongPressEnd: (longPressEndDetails) {
+                      _stop();
+                    },
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height / 20),
+                          child: Text(
+                            audioText,
+                            style: TextStyle(fontSize: 20.0),
                           ),
                         ),
-                      )
-                  ),
-                ],
-              ),
-            ) : Container()
+                        Container(
+                            alignment: Alignment.bottomCenter,
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height / 7,
+                            child: Container(
+                              alignment: Alignment.center,
+                              child: CircleAvatar(
+                                radius: 35.0,
+                                child: Icon(
+                                  Icons.mic,
+                                  size: 30.0,
+                                ),
+                              ),
+                            )),
+                      ],
+                    ),
+                  )
+                : Container()
           ],
         ),
       ),

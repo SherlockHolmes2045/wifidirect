@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:siuu_tchat/model/Device.dart';
-import 'package:siuu_tchat/database/chat_dao.dart';
-import 'package:siuu_tchat/model/chat.dart' as chatModel;
 import 'package:flutter/services.dart';
 import 'package:siuu_tchat/res/colors.dart';
-import 'package:siuu_tchat/screens/Messages/chat_custom.dart';
 
 class RadarGroup extends StatefulWidget {
   List<String> groups = new List<String>();
@@ -13,14 +9,14 @@ class RadarGroup extends StatefulWidget {
   bool isSearching;
   var provider;
   String userIp;
-  RadarGroup(this.groups,this.buttonSearch,this.isSearching,this.provider,this.userIp);
+  bool serverFound;
+  RadarGroup(this.groups,this.buttonSearch,this.isSearching,this.provider,this.userIp,this.serverFound);
   @override
   _RadarGroupState createState() => _RadarGroupState();
 }
 
 class _RadarGroupState extends State<RadarGroup> {
   String img = "assets/images/person1.png";
-  static const platform = const MethodChannel('samples.flutter.dev/battery');
   List<Widget> peers = new List<Widget>();
   int start = 2;
 

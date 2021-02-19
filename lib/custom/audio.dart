@@ -16,7 +16,8 @@ const kUrl =
 
 class MyAudioPlayer extends StatefulWidget {
   String filePath;
-  MyAudioPlayer({this.filePath});
+  bool byte;
+  MyAudioPlayer({this.filePath,this.byte});
   @override
   _MyAudioPlayerState createState() => _MyAudioPlayerState();
 }
@@ -214,7 +215,8 @@ class _MyAudioPlayerState extends State<MyAudioPlayer> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
+    if(widget.byte){
+    }
     initAudioPlayer();
   }
   @override

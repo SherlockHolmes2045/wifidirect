@@ -212,29 +212,28 @@ class ServerViewModel extends ChangeNotifier {
     await _socket.close();
   }
 
-  void sendMessage(context, TCPData tcpData, {bool isHost,String messages}) async{
+  void sendMessage(context, TCPData tcpData,String type,{bool isHost,String messages}) async{
     RoomTalkDao roomTalkDao = new RoomTalkDao();
     String senderIp = "";
     if (!Platform.isMacOS) senderIp = await GetIp.ipAddress;
     print(senderIp);
     var message = utf8.encode(json.encode(
-        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch).toJson()));
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: type,time: DateTime.now().millisecondsSinceEpoch).toJson()));
 
     if (isHost) {
       print("host");
       _messageList.insert(
         0,
-        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name,user: 0,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch),
+        Message(message: messages !=null ? messages :msg.text, name: tcpData?.name,user: 0,type: type,time: DateTime.now().millisecondsSinceEpoch),
       );
       notifyListeners();
     }
 
     try {
       _socket.add(message);
-      roomTalkDao.insert(Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: messages !=null ? "image" : "text",time: DateTime.now().millisecondsSinceEpoch));
+      roomTalkDao.insert(Message(message: messages !=null ? messages :msg.text, name: tcpData?.name ?? '',ip: senderIp,type: type,time: DateTime.now().millisecondsSinceEpoch));
       msg.clear();
     } catch (e) {
-      //showErrorDialog(context, error: e.toString());
       print(e.toString());
     }
     notifyListeners();
